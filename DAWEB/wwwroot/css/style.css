@@ -1,0 +1,306 @@
+﻿body {
+    font-family: Arial;
+    margin: 0;
+    background: #f4f6fb;
+}
+
+/* menu */
+
+.menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg,#667eea,#764ba2);
+    padding: 15px 40px;
+}
+
+.logo {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.menu-right {
+    display: flex;
+    gap: 20px;
+}
+
+    .menu-right a {
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+    }
+
+        .menu-right a:hover {
+            background: white;
+            color: #764ba2;
+        }
+
+/* container */
+
+.container {
+    width: 90%;
+    margin: auto;
+    margin-top: 30px;
+}
+
+/* hero */
+
+.hero {
+    text-align: center;
+    padding: 100px;
+    background: linear-gradient(120deg,#4facfe,#00f2fe);
+    color: white;
+}
+
+.btn-shop {
+    background: white;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+}
+
+/* product */
+
+.product-list {
+    display: flex;
+    gap: 20px;
+}
+
+.product {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    width: 200px;
+    text-align: center;
+}
+
+.price {
+    color: red;
+    font-weight: bold;
+}
+
+/* cart */
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .cart-table th,
+    .cart-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+
+/* footer */
+
+footer {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+.product img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* trang chi tiết sản phẩm */
+
+.product-detail-page {
+    display: flex;
+    gap: 50px;
+    margin-top: 40px;
+    align-items: center;
+}
+
+.product-image img {
+    width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.product-info {
+    max-width: 500px;
+}
+
+    .product-info h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+.price {
+    color: #e74c3c;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.description {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.product-extra p {
+    margin: 5px 0;
+}
+
+.buttons {
+    margin-top: 20px;
+}
+
+.btn-buy {
+    background: #e74c3c;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+    .btn-buy:hover {
+        background: #c0392b;
+    }
+
+.btn-back {
+    background: #3498db;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+/* Sửa lỗi cho Form nằm trong class .hero */
+.hero form {
+    max-width: 500px; /* Giới hạn độ rộng form cho đẹp */
+    margin: 20px auto; /* Căn giữa form */
+    text-align: left; /* Chữ trong form nên căn trái để dễ đọc */
+}
+
+/* Đảm bảo chữ trong các ô nhập liệu luôn có màu đen hoặc đậm */
+.hero .form-control,
+.hero .form-select {
+    color: #333 !important;
+    width: 100%;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Định dạng nhãn (label) */
+.hero .form-label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+    text-align: left;
+}
+
+/* Căn chỉnh lại các ô select để không bị co nhỏ */
+.form-select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+    .btn-back:hover {
+        background: #2980b9;
+    }
+.product-detail-container {
+    display: flex; /* Kích hoạt Flexbox */
+    gap: 40px; /* Khoảng cách giữa ảnh và chữ */
+    align-items: flex-start; /* Căn lề phía trên */
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.product-image img {
+    max-width: 400px; /* Giới hạn chiều rộng ảnh */
+    height: auto;
+    border-radius: 8px; /* Bo góc nhẹ cho ảnh đẹp hơn */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Tạo bóng đổ nhẹ */
+}
+
+.product-info {
+    flex: 1; /* Chiếm phần không gian còn lại bên phải */
+}
+
+    .product-info h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        text-transform: capitalize;
+    }
+
+    .product-info p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee; /* Đường gạch chân nhẹ giữa các dòng */
+        padding-bottom: 5px;
+    }
+
+/* Hỗ trợ hiển thị tốt trên điện thoại (đưa chữ xuống dưới ảnh khi màn hình nhỏ) */
+@media (max-width: 768px) {
+    .product-detail-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .product-image img {
+        max-width: 100%;
+    }
+}
+/* 1. Đảm bảo các mục trong menu nằm trên cùng một hàng */
+.menu-right {
+    display: flex;
+    align-items: center;
+}
+
+/* 2. Định dạng cho mục Sản phẩm có chứa menu con */
+.dropdown-custom {
+    position: relative;
+    list-style: none; /* Xóa dấu chấm đầu dòng */
+    display: inline-block;
+}
+
+/* 3. Ẩn menu con mặc định */
+.dropdown-menu-custom {
+    display: none; /* Ẩn đi */
+    position: absolute;
+    top: 100%; /* Nằm ngay dưới chữ Sản phẩm */
+    left: 0;
+    background-color: #6a5acd; /* Màu tím cùng tông header */
+    min-width: 150px;
+    padding: 10px 0;
+    margin: 0;
+    list-style: none; /* Xóa dấu chấm menu con */
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    z-index: 999;
+}
+
+    /* 4. Định dạng chữ bên trong menu con */
+    .dropdown-menu-custom li a {
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        display: block;
+    }
+
+        /* 5. Đổi màu khi di chuột vào từng mục Nam/Nữ */
+        .dropdown-menu-custom li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+/* 6. HIỆN MENU KHI DI CHUỘT VÀO .dropdown-custom */
+.dropdown-custom:hover .dropdown-menu-custom {
+    display: block;
+}

@@ -1,0 +1,228 @@
+@model IEnumerable<DAWEB.Models.OrderModel>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi — SweetBite Bakery";
+}
+
+<style>
+    :root {
+        --primary-brown: #3e2723;
+        --accent-gold: #c5a059;
+        --light-cream: #faf6f0;
+        --accent-peach: #f5ebe6;
+        --text-dark: #2b1f1d;
+        --text-muted: #7d6e6b;
+    }
+
+    .orders-container {
+        max-width: 1000px;
+        margin: 40px auto 80px;
+    }
+
+    .orders-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(93, 64, 55, 0.05);
+        background: #ffffff;
+        padding: 30px;
+    }
+
+    .status-badge {
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-completed {
+        background-color: #d1fae5;
+        color: #059669;
+    }
+
+    .status-cancelled {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+
+    .table-orders th {
+        font-weight: 600;
+        color: var(--text-muted);
+        border-bottom: 2px solid rgba(62, 39, 35, 0.08);
+        padding: 15px 10px;
+    }
+
+    .table-orders td {
+        color: var(--text-dark);
+        border-bottom: 1px solid rgba(62, 39, 35, 0.05);
+        padding: 15px 10px;
+        vertical-align: middle;
+    }
+
+    .btn-action {
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 20px;
+        padding: 6px 15px;
+        transition: all 0.3s;
+    }
+
+    .btn-view {
+        background-color: var(--light-cream);
+        color: var(--primary-brown);
+        border: 1px solid var(--accent-peach);
+    }
+
+    .btn-view:hover {
+        background-color: var(--accent-peach);
+        color: var(--primary-brown);
+    }
+
+    .btn-cancel {
+        background-color: #fff;
+        color: #dc2626;
+        border: 1px solid #fee2e2;
+    }
+
+    .btn-cancel:hover {
+        background-color: #dc2626;
+        color: #fff;
+        border-color: #dc2626;
+    }
+
+    .empty-orders {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-orders i {
+        font-size: 4rem;
+        color: var(--accent-peach);
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container orders-container">
+    <div class="orders-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-brown); margin: 0;">
+                <i class="fas fa-shopping-bag me-2" style="color: var(--accent-gold);"></i> Đơn hàng của tôi
+            </h2>
+            <span class="text-muted">Tổng số đơn hàng: @Model.Count()</span>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px; margin-bottom: 25px;">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px; margin-bottom: 25px;">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <div class="empty-orders">
+                <i class="fas fa-shopping-basket"></i>
+                <h4 style="font-family: 'Playfair Display', serif; font-weight: 600; color: var(--primary-brown);">Bạn chưa có đơn hàng nào</h4>
+                <p class="text-muted mb-4">Hãy ghé qua tiệm bánh và chọn cho mình chiếc bánh ngọt ngào nhất nhé!</p>
+                <a href="/Product" class="btn btn-primary px-4 py-2" style="background-color: var(--primary-brown); border-color: var(--primary-brown); border-radius: 30px; font-weight: 600;">
+                    Mua sắm ngay
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-orders align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Người nhận</th>
+                            <th>Tổng tiền</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold" style="font-family: monospace; font-size: 1.05rem; color: var(--primary-brown);">
+                                    @order.OrderCode
+                                </td>
+                                <td class="text-muted">
+                                    @order.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@order.ReceiverName</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">@order.ReceiverPhone</div>
+                                </td>
+                                <td class="fw-bold text-danger">
+                                    @order.TotalAmount.ToString("N0") đ
+                                </td>
+                                <td>
+                                    @if (order.PaymentStatus == "Paid")
+                                    {
+                                        <span class="status-badge status-completed"><i class="fas fa-check-circle me-1"></i> Đã thanh toán</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-cancelled"><i class="fas fa-times-circle me-1"></i> Chưa thanh toán</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (order.Status == "Pending")
+                                    {
+                                        <span class="status-badge status-pending"><i class="fas fa-clock me-1"></i> Chờ duyệt</span>
+                                    }
+                                    else if (order.Status == "Completed")
+                                    {
+                                        <span class="status-badge status-completed"><i class="fas fa-check-circle me-1"></i> Đã duyệt</span>
+                                    }
+                                    else if (order.Status == "Cancelled")
+                                    {
+                                        <span class="status-badge status-cancelled"><i class="fas fa-times-circle me-1"></i> Đã hủy</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@order.Status</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <a href="/Order/Details/@order.Id" class="btn btn-action btn-view">
+                                            <i class="fas fa-info-circle me-1"></i> Chi tiết
+                                        </a>
+                                        @if (order.Status == "Pending")
+                                        {
+                                            <form action="/Order/Cancel/@order.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-action btn-cancel">
+                                                    <i class="fas fa-ban me-1"></i> Hủy
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

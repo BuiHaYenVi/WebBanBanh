@@ -1,0 +1,112 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-page d-flex justify-content-center align-items-center">
+
+    <div class="login-card p-4 shadow">
+
+        <div class="text-center mb-4">
+            <h1 class="h3 fw-bold login-title">Đăng nhập</h1>
+            <p class="text-muted small">Chào mừng quay lại với <span class="brand-text">SweetBite</span></p>
+        </div>
+
+        <form asp-controller="Account" asp-action="Login" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label small fw-bold">Tên đăng nhập</label>
+                <input asp-for="Email" placeholder="Nhập tên đăng nhập..." class="form-control rounded-pill" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label small fw-bold">Mật khẩu</label>
+                <div class="position-relative">
+                    <input asp-for="Password" type="password" placeholder="Nhập mật khẩu..." class="form-control rounded-pill pe-5" id="passwordInput" />
+                    <i class="fas fa-eye position-absolute top-50 end-0 translate-middle-y me-3 text-muted" id="togglePasswordIcon" style="cursor: pointer;" title="Hiện mật khẩu"></i>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 small">
+                <label class="form-check-label">
+                    <input asp-for="RememberMe" class="form-check-input" /> Ghi nhớ
+                </label>
+
+                @* Đã xóa thẻ cũ và chỉ giữ lại link dẫn đến trang ForgotPassword chuẩn *@
+                <a asp-action="ForgotPassword" asp-controller="Account" class="text-decoration-none brand-link">Quên mật khẩu?</a>
+            </div>
+
+            <button type="submit" class="btn btn-brand w-100 rounded-pill fw-bold">ĐĂNG NHẬP NGAY</button>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top small">
+            <p class="text-muted">Chưa có tài khoản? <a asp-controller="Account" asp-action="Register" class="text-decoration-none brand-link fw-bold">Đăng ký tại đây</a></p>
+        </div>
+
+    </div>
+</div>
+
+@* --- ĐOẠN CSS ĐỒI MÀU THEO TIỆM BÁNH --- *@
+<style>
+    /* 1. Nền toàn trang: Sử dụng màu vàng be nhạt (giống nền trang chủ của bạn) */
+    .login-page {
+        min-height: 100vh;
+        background-color: #fcf8f2;
+    }
+
+    /* 2. Hộp đăng nhập: Màu trắng, bo góc vừa phải */
+    .login-card {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 400px;
+        border-radius: 15px;
+    }
+
+    /* 3. Chữ Tiêu đề & Link: Màu nâu đậm của tiệm bánh */
+    .login-title, .brand-text {
+        color: #2c1c13;
+    }
+
+    .brand-link {
+        color: #be9355; /* Màu vàng bánh nướng */
+    }
+
+        .brand-link:hover {
+            color: #2c1c13;
+        }
+
+    /* 4. Nút bấm tùy biến: Nền nâu chữ trắng sang trọng */
+    .btn-brand {
+        background-color: #2c1c13;
+        color: #ffffff;
+        padding: 10px;
+    }
+
+        .btn-brand:hover {
+            background-color: #be9355; /* Re chuột vào đổi sang màu vàng */
+            color: #ffffff;
+        }
+</style>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleIcon = document.getElementById("togglePasswordIcon");
+            const passInput = document.getElementById("passwordInput");
+
+            if (toggleIcon && passInput) {
+                toggleIcon.addEventListener("click", function () {
+                    // Chuyển đổi giữa password và text
+                    const type = passInput.getAttribute("type") === "password" ? "text" : "password";
+                    passInput.setAttribute("type", type);
+
+                    // Đổi hình icon mắt
+                    this.classList.toggle("fa-eye");
+                    this.classList.toggle("fa-eye-slash");
+                });
+            }
+        });
+    </script>
+}

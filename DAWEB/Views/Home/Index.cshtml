@@ -1,0 +1,308 @@
+@{
+    ViewData["Title"] = "Trang chủ";
+    var homeConfig = ViewBag.HomePageConfig as DAWEB.Models.ViewModel.HomePageConfig;
+    var bgImg = !string.IsNullOrEmpty(homeConfig?.BackgroundImage) ? homeConfig.BackgroundImage : "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1600";
+    var title = !string.IsNullOrEmpty(homeConfig?.Title) ? homeConfig.Title : "SweetBite";
+    var subtitle = !string.IsNullOrEmpty(homeConfig?.Subtitle) ? homeConfig.Subtitle : "Đánh thức vị giác tại";
+    var description = !string.IsNullOrEmpty(homeConfig?.Description) ? homeConfig.Description : "Mỗi chiếc bánh tại SweetBite là một tác phẩm nghệ thuật thủ công ngọt ngào, được nướng mới mỗi ngày từ những nguyên liệu hữu cơ cao cấp nhất.";
+}
+
+<style>
+    /* Hero Section with Parallax or Smooth Blend */
+    .hero-section {
+        background: linear-gradient(rgba(43, 31, 29, 0.45), rgba(43, 31, 29, 0.65)), 
+                    url('@bgImg') no-repeat center center;
+        background-size: cover;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-radius: 24px;
+        margin-bottom: 60px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        color: white;
+        padding: 20px;
+    }
+
+    .hero-content {
+        background: rgba(43, 31, 29, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 50px 60px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        max-width: 700px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #ffffff;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .hero-title span {
+        color: var(--accent-gold);
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        font-weight: 300;
+        margin-bottom: 35px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+    }
+
+    .btn-explore {
+        background-color: var(--accent-gold);
+        color: var(--primary-brown) !important;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 15px 40px;
+        border-radius: 30px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transition: var(--transition-smooth);
+        border: 2px solid var(--accent-gold);
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-explore:hover {
+        background-color: transparent;
+        color: #ffffff !important;
+        border-color: #ffffff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Core Values Section */
+    .value-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 16px;
+        padding: 40px 30px;
+        text-align: center;
+        transition: var(--transition-smooth);
+        box-shadow: var(--card-shadow);
+        height: 100%;
+    }
+
+    .value-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(93, 64, 55, 0.12);
+    }
+
+    .value-icon {
+        font-size: 3rem;
+        color: var(--accent-gold);
+        margin-bottom: 25px;
+    }
+
+    .value-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--primary-brown);
+    }
+
+    .value-desc {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    /* Category Menu Section */
+    .menu-teaser-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--primary-brown);
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .menu-teaser-subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto 50px;
+        font-size: 1.1rem;
+    }
+
+    .category-box {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        height: 380px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    .category-box:hover {
+        transform: scale(1.03);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+
+    .category-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition-smooth);
+    }
+
+    .category-box:hover .category-img {
+        transform: scale(1.1);
+    }
+
+    .category-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(43, 31, 29, 0.9) 0%, rgba(43, 31, 29, 0.3) 70%, transparent 100%);
+        padding: 40px 30px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        height: 60%;
+        transition: var(--transition-smooth);
+    }
+
+    .category-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #ffffff;
+    }
+
+    .category-desc {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 15px;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: var(--transition-smooth);
+    }
+
+    .category-box:hover .category-desc {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .category-link {
+        color: var(--accent-gold);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .category-link i {
+        transition: var(--transition-smooth);
+        margin-left: 5px;
+    }
+
+    .category-box:hover .category-link i {
+        transform: translateX(5px);
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">@subtitle <br/><span>@title</span></h1>
+        <p class="hero-subtitle">@description</p>
+        <a href="/Product" class="btn-explore"><i class="fas fa-compass me-2"></i> Khám phá thực đơn</a>
+    </div>
+</div>
+
+<!-- Core Values -->
+<div class="container my-5 py-3">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-seedling"></i></div>
+                <h3 class="value-title">100% Nguyên Liệu Sạch</h3>
+                <p class="value-desc">Chúng tôi chỉ sử dụng bơ Pháp hảo hạng, dâu tây Đà Lạt tươi hái trong ngày và bột mì nguyên cám cao cấp không chất bảo quản.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-bread-slice"></i></div>
+                <h3 class="value-title">Nướng Mới Mỗi Ngày</h3>
+                <p class="value-desc">Bánh được nhào bột và nướng mộc trực tiếp tại lò mỗi buổi sáng để đảm bảo độ giòn thơm và giữ trọn hương vị nguyên bản.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-birthday-cake"></i></div>
+                <h3 class="value-title">Nghệ Thuật Tạo Hình</h3>
+                <p class="value-desc">Đội ngũ nghệ nhân làm bánh chuyên nghiệp sẵn sàng thiết kế và tạo tác những mẫu bánh kem độc bản theo yêu cầu của bạn.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Menu Teaser -->
+<div class="container my-5 py-5 border-top border-bottom border-light">
+    <h2 class="menu-teaser-title"><i class="fas fa-cookie-bite me-2" style="color: var(--accent-gold);"></i>Khám Phá Thực Đơn Ngọt Ngào</h2>
+    <p class="menu-teaser-subtitle">Tìm thấy chiếc bánh yêu thích của bạn từ những công thức cổ điển châu Âu đến những hương vị phá cách hiện đại.</p>
+    
+    <div class="row g-4 mt-2">
+        <!-- Bánh Kem -->
+        <div class="col-md-4" onclick="location.href='/Product?gender=BanhKem'">
+            <div class="category-box">
+                <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800" alt="Bánh Kem" class="category-img" />
+                <div class="category-overlay">
+                    <h3 class="category-title"><i class="fas fa-birthday-cake me-2"></i>Bánh Kem Sinh Nhật</h3>
+                    <p class="category-desc">Những chiếc bánh kem lộng lẫy, cốt bánh mềm ẩm mượt mà, lý tưởng cho mọi bữa tiệc kỷ niệm đáng nhớ.</p>
+                    <span class="category-link">Xem thực đơn <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </div>
+        </div>
+        <!-- Bánh Ngọt -->
+        <div class="col-md-4" onclick="location.href='/Product?gender=BanhNgot'">
+            <div class="category-box">
+                <img src="https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=800" alt="Bánh Ngọt" class="category-img" />
+                <div class="category-overlay">
+                    <h3 class="category-title"><i class="fas fa-cookie me-2"></i>Bánh Ngọt & Pastry</h3>
+                    <p class="category-desc">Những miếng macaron đầy màu sắc, cupcake xinh xắn hay tart trái cây cho buổi trà chiều hoàn hảo.</p>
+                    <span class="category-link">Xem thực đơn <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </div>
+        </div>
+        <!-- Bánh Mì -->
+        <div class="col-md-4" onclick="location.href='/Product?gender=BanhMi'">
+            <div class="category-box">
+                <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800" alt="Bánh Mì" class="category-img" />
+                <div class="category-overlay">
+                    <h3 class="category-title"><i class="fas fa-bread-slice me-2"></i>Bánh Mì Tươi</h3>
+                    <p class="category-desc">Từ sừng bò ngàn lớp thơm bơ Pháp đến những ổ bánh mì ngũ cốc dinh dưỡng ấm áp nướng tại lò.</p>
+                    <span class="category-link">Xem thực đơn <i class="fas fa-arrow-right"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

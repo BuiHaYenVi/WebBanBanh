@@ -1,0 +1,94 @@
+@model DAWEB.Models.VoucherModel
+@{
+    ViewData["Title"] = "Cập nhật Voucher";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Cập nhật Mã Giảm Giá</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="UsedCount" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Code">Mã Voucher</label>
+                            <input asp-for="Code" class="form-control" style="text-transform:uppercase" />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="Description">Mô tả</label>
+                            <input asp-for="Description" class="form-control" />
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="DiscountType">Loại giảm giá</label>
+                            <select asp-for="DiscountType" class="form-control">
+                                <option value="Fixed">Giảm tiền mặt (đ)</option>
+                                <option value="Percent">Giảm theo phần trăm (%)</option>
+                            </select>
+                            <span asp-validation-for="DiscountType" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="DiscountValue">Giá trị giảm</label>
+                            <input asp-for="DiscountValue" class="form-control" type="number" />
+                            <span asp-validation-for="DiscountValue" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="MaxDiscountAmount">Mức giảm tối đa</label>
+                            <input asp-for="MaxDiscountAmount" class="form-control" type="number" />
+                            <span asp-validation-for="MaxDiscountAmount" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="MinimumOrderAmount">Giá trị đơn hàng tối thiểu (đ)</label>
+                            <input asp-for="MinimumOrderAmount" class="form-control" type="number" />
+                            <span asp-validation-for="MinimumOrderAmount" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="UsageLimit">Giới hạn số lần sử dụng</label>
+                            <input asp-for="UsageLimit" class="form-control" type="number" />
+                            <span asp-validation-for="UsageLimit" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="StartDate">Ngày bắt đầu</label>
+                            <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="EndDate">Ngày kết thúc</label>
+                            <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group form-check mt-4">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label class="form-check-label" asp-for="IsActive">Kích hoạt Voucher này</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Cập nhật Voucher</button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

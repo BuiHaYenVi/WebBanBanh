@@ -1,0 +1,792 @@
+@{
+    ViewData["Title"] = "VietQR Payment Gateway Demo";
+}
+
+<!-- Nhúng Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Nhúng Thư viện Sinh Mã QR Offline (QRCode.js) qua CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nOMQLk0ybysVyIPXPujV45RTvuHBVGucM+LDDFyAm59aa5zELtDlWBYQD3t8obH0cYZ1CXNPcFaQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div class="vietqr-container">
+    <div class="vietqr-header">
+        <h1 class="vietqr-title">Cổng Thanh Toán Tự Động VietQR</h1>
+        <p class="vietqr-subtitle">Học cách tạo và hiển thị chuỗi chuẩn EMVCo trên Frontend & Backend</p>
+    </div>
+
+    <!-- Hướng dẫn & Form thay đổi thông tin -->
+    <div class="vietqr-grid">
+        <!-- Cột bên trái: Trình hiển thị mã QR & Thanh toán -->
+        <div class="vietqr-card qr-display-card">
+            <div class="card-glow"></div>
+            <div class="card-header-accent">
+                <span class="badge">MB Bank (970422)</span>
+                <span class="status-dot-pulse">Chờ thanh toán</span>
+            </div>
+
+            <!-- Táp chuyển đổi cách hiển thị QR ở Frontend -->
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchQrMethod('js-canvas')">JS Offline (Khuyên dùng)</button>
+                <button class="tab-btn" onclick="switchQrMethod('vietqr-api')">VietQR Template API</button>
+                <button class="tab-btn" onclick="switchQrMethod('standard-api')">Standard QR API</button>
+            </div>
+
+            <div class="qr-box-wrapper">
+                <!-- Method 1: Canvas render offline bằng JS -->
+                <div id="method-js-canvas" class="qr-content active">
+                    <div id="qrcode-canvas" class="qr-image-container"></div>
+                    <p class="qr-description">
+                        <i class="icon-secure">🔒</i> 
+                        <strong>Tạo Offline bằng JS:</strong> Sử dụng chuỗi EMVCo thô từ Backend, hiển thị an toàn không qua bên thứ ba.
+                    </p>
+                </div>
+
+                <!-- Method 2: Dùng API chuyên dụng của VietQR (có khung & logo ngân hàng) -->
+                <div id="method-vietqr-api" class="qr-content">
+                    <div class="qr-image-container">
+                        <img id="img-vietqr-api" src="" alt="VietQR API" class="qr-api-img" />
+                    </div>
+                    <p class="qr-description">
+                        <i class="icon-template">🎨</i> 
+                        <strong>VietQR Template API:</strong> Gọi trực tiếp qua API VietQR.io để hiển thị khung ngân hàng chuyên nghiệp.
+                    </p>
+                </div>
+
+                <!-- Method 3: Dùng API QR thô của QRServer -->
+                <div id="method-standard-api" class="qr-content">
+                    <div class="qr-image-container">
+                        <img id="img-standard-api" src="" alt="Standard QR Code" class="qr-api-img" />
+                    </div>
+                    <p class="qr-description">
+                        <i class="icon-api">🌐</i> 
+                        <strong>Standard QR API:</strong> Tạo ảnh QR từ chuỗi EMVCo thô thông qua API qrserver.com công cộng.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Thông tin hóa đơn chuyển khoản -->
+            <div class="payment-details">
+                <div class="detail-row">
+                    <span class="detail-label">Chủ tài khoản:</span>
+                    <span class="detail-val text-highlight">@ViewBag.AccountName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Số tài khoản:</span>
+                    <span class="detail-val">@ViewBag.AccountNumber</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Số tiền:</span>
+                    <span class="detail-val text-amount">@String.Format("{0:N0}", ViewBag.TotalAmount) VND</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Nội dung chuyển:</span>
+                    <span class="detail-val text-code">@ViewBag.OrderCode</span>
+                </div>
+            </div>
+
+            <!-- Chuỗi VietQR thô -->
+            <div class="raw-string-container">
+                <label class="raw-label">Chuỗi VietQR thô (Chuẩn EMVCo):</label>
+                <div class="raw-input-group">
+                    <input type="text" id="raw-vietqr-input" value="@ViewBag.VietQrString" readonly />
+                    <button class="copy-btn" onclick="copyRawString()">Sao chép</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột bên phải: Form cấu hình nhanh & Giải thích cấu trúc chuỗi -->
+        <div class="vietqr-card explain-card">
+            <h2>Cấu hình & Học tập</h2>
+            <p class="section-desc">Thay đổi thông tin đơn hàng bên dưới để tạo mã QR mới động:</p>
+
+            <form method="get" asp-controller="VietQRDemo" asp-action="Index" class="demo-form">
+                <div class="form-group">
+                    <label for="total_amount">Số tiền (total_amount)</label>
+                    <input type="number" id="total_amount" name="total_amount" value="@ViewBag.TotalAmount" min="1000" step="1000" required />
+                </div>
+                <div class="form-group">
+                    <label for="order_code">Nội dung chuyển khoản (order_code)</label>
+                    <input type="text" id="order_code" name="order_code" value="@ViewBag.OrderCode" required />
+                </div>
+                <button type="submit" class="submit-btn">Cập nhật đơn hàng & Tạo lại QR</button>
+            </form>
+
+            <div class="divider"></div>
+
+            <h3>Giải mã cấu trúc chuỗi VietQR (TLV)</h3>
+            <p class="section-desc">Chuỗi EMVCo ở bên trái được tạo từ các cặp <strong>Tag - Length (Độ dài) - Value (Giá trị)</strong> lồng nhau:</p>
+            
+            <div class="table-responsive">
+                <table class="tlv-table" id="tlv-decoder-table">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Tên trường thông tin</th>
+                            <th>Độ dài</th>
+                            <th>Giá trị dữ liệu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dữ liệu sẽ được điền tự động bằng Javascript phía dưới -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS cho giao diện Premium -->
+<style>
+    /* Reset & Fonts */
+    .vietqr-container {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #e2e8f0;
+        background-color: #0B192C; /* Navy đậm đà phong cách Fintech */
+        padding: 30px 20px;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        margin: 20px auto;
+        max-width: 1200px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .vietqr-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .vietqr-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .vietqr-subtitle {
+        color: #94a3b8;
+        font-size: 1rem;
+    }
+
+    /* Grid Layout */
+    .vietqr-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    @@media (min-width: 992px) {
+        .vietqr-grid {
+            grid-template-columns: 450px 1fr;
+        }
+    }
+
+    /* Cards */
+    .vietqr-card {
+        background: rgba(30, 41, 59, 0.7); /* Glassmorphism */
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .qr-display-card {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .card-glow {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, transparent 70%);
+        top: -50px;
+        right: -50px;
+        pointer-events: none;
+    }
+
+    .card-header-accent {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .badge {
+        background: linear-gradient(135deg, #0052D4, #4364F7);
+        color: #ffffff;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .status-dot-pulse {
+        font-size: 0.85rem;
+        color: #38bdf8;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .status-dot-pulse::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #38bdf8;
+        border-radius: 50%;
+        box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+        animation: pulse 1.6s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 8px rgba(56, 189, 248, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+        }
+    }
+
+    /* Tabs */
+    .tab-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        background: rgba(15, 23, 42, 0.6);
+        padding: 4px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 8px 4px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .tab-btn:hover {
+        color: #ffffff;
+    }
+
+    .tab-btn.active {
+        background: #00F2FE;
+        color: #0F172A;
+        box-shadow: 0 4px 12px rgba(0, 242, 254, 0.25);
+    }
+
+    /* QR Output Area */
+    .qr-box-wrapper {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 340px;
+    }
+
+    .qr-content {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .qr-content.active {
+        display: flex;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .qr-image-container {
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 16px;
+    }
+
+    .qr-image-container canvas, .qr-image-container img {
+        display: block;
+        max-width: 200px;
+        max-height: 200px;
+        height: auto;
+    }
+
+    .qr-api-img {
+        width: 200px;
+        height: 200px;
+        object-fit: contain;
+    }
+
+    .qr-description {
+        font-size: 0.85rem;
+        color: #cbd5e1;
+        text-align: center;
+        line-height: 1.4;
+        margin: 0;
+        padding: 0 10px;
+    }
+
+    .qr-description i {
+        margin-right: 4px;
+    }
+
+    /* Payment details */
+    .payment-details {
+        margin-top: 24px;
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+    }
+
+    .detail-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-label {
+        color: #94a3b8;
+    }
+
+    .detail-val {
+        font-weight: 600;
+        color: #f8fafc;
+    }
+
+    .text-highlight {
+        color: #00F2FE;
+    }
+
+    .text-amount {
+        color: #10B981; /* Màu xanh lá tiền bạc */
+        font-weight: 700;
+    }
+
+    .text-code {
+        color: #F59E0B; /* Màu cam nổi bật */
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Raw string section */
+    .raw-string-container {
+        margin-top: 20px;
+    }
+
+    .raw-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .raw-input-group {
+        display: flex;
+        gap: 8px;
+    }
+
+    #raw-vietqr-input {
+        flex: 1;
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #cbd5e1;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        outline: none;
+    }
+
+    .copy-btn {
+        background: rgba(56, 189, 248, 0.1);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+        background: #38bdf8;
+        color: #0f172a;
+    }
+
+    /* Form Configuration */
+    .explain-card h2 {
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-bottom: 8px;
+        color: #ffffff;
+    }
+
+    .explain-card h3 {
+        font-size: 1.2rem;
+        color: #ffffff;
+        margin-top: 24px;
+        margin-bottom: 8px;
+    }
+
+    .section-desc {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+
+    .demo-form {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    @@media (min-width: 576px) {
+        .demo-form {
+            grid-template-columns: 1fr 1.5fr;
+        }
+        .submit-btn {
+            grid-column: span 2;
+        }
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .form-group input {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        outline: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+        border-color: #00F2FE;
+        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+        color: #0F172A;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 8px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 242, 254, 0.3);
+    }
+
+    .divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 28px 0;
+    }
+
+    /* TLV Table */
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(15, 23, 42, 0.3);
+    }
+
+    .tlv-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.85rem;
+    }
+
+    .tlv-table th, .tlv-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tlv-table th {
+        background: rgba(15, 23, 42, 0.7);
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .tlv-table tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tlv-table td {
+        color: #cbd5e1;
+    }
+
+    .tlv-tag-code {
+        font-family: 'JetBrains Mono', monospace;
+        color: #00F2FE;
+        font-weight: 600;
+    }
+
+    .tlv-subtag {
+        padding-left: 24px;
+        color: #94a3b8;
+    }
+
+    .tlv-subtag::before {
+        content: "└─ ";
+        opacity: 0.6;
+    }
+
+    .tlv-val-code {
+        font-family: 'JetBrains Mono', monospace;
+        background: rgba(15, 23, 42, 0.5);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #e2e8f0;
+        font-size: 0.8rem;
+    }
+</style>
+
+<!-- JavaScript logic cho việc chuyển đổi mã QR & Giải mã TLV -->
+<script>
+    const vietQrString = "@ViewBag.VietQrString";
+    
+    // Khởi tạo các mã QR lúc tải trang
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Tạo QR Canvas bằng QRCode.js (Offline)
+        try {
+            new QRCode(document.getElementById("qrcode-canvas"), {
+                text: vietQrString,
+                width: 200,
+                height: 200,
+                colorDark: "#0B192C", // Hài hòa với theme navy
+                colorLight: "#FFFFFF",
+                correctLevel: QRCode.CorrectLevel.M // Mức sửa sai Trung bình
+            });
+        } catch (e) {
+            console.error("Lỗi khi dựng QR offline bằng JS: ", e);
+            document.getElementById("qrcode-canvas").innerText = "Không thể sinh mã QR Offline.";
+        }
+
+        // 2. Chuẩn bị link ảnh cho VietQR API (Nhà cung cấp vietqr.io)
+        // Cấu trúc: https://img.vietqr.io/image/<BANK_ID>-<ACCOUNT_NO>-<TEMPLATE>.png?amount=<AMOUNT>&addInfo=<INFO>&accountName=<NAME>
+        const encodedName = encodeURIComponent("@ViewBag.AccountName");
+        const encodedCode = encodeURIComponent("@ViewBag.OrderCode");
+        const amount = "@ViewBag.TotalAmount";
+        const bankId = "MB"; // Mã ngân hàng MB Bank
+        const accountNo = "@ViewBag.AccountNumber";
+        const template = "compact2"; // Template nhỏ gọn, chuyên nghiệp
+
+        const vietQrImageUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-${template}.png?amount=${amount}&addInfo=${encodedCode}&accountName=${encodedName}`;
+        document.getElementById("img-vietqr-api").src = vietQrImageUrl;
+
+        // 3. Chuẩn bị link ảnh cho Standard QR Code Server (Từ chuỗi EMVCo thô)
+        const standardQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(vietQrString)}`;
+        document.getElementById("img-standard-api").src = standardQrUrl;
+
+        // 4. Gọi hàm giải mã chuỗi và đưa lên bảng
+        decodeAndRenderTlv(vietQrString);
+    });
+
+    // Hàm chuyển đổi Tab hiển thị QR
+    function switchQrMethod(methodId) {
+        // Xóa class active ở tất cả tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        // Ẩn tất cả nội dung QR
+        document.querySelectorAll('.qr-content').forEach(content => content.classList.remove('active'));
+
+        // Thêm active cho nút hiện tại
+        const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(methodId));
+        if (targetBtn) targetBtn.classList.add('active');
+
+        // Hiển thị nội dung QR tương ứng
+        document.getElementById(`method-${methodId}`).classList.add('active');
+    }
+
+    // Sao chép chuỗi thô
+    function copyRawString() {
+        const copyText = document.getElementById("raw-vietqr-input");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // Dành cho di động
+        navigator.clipboard.writeText(copyText.value)
+            .then(() => {
+                alert("Đã sao chép chuỗi VietQR vào bộ nhớ tạm!");
+            })
+            .catch(err => {
+                console.error('Không thể sao chép: ', err);
+            });
+    }
+
+    // Định nghĩa ý nghĩa của các Tag EMVCo
+    const EMV_SPEC = {
+        "00": { name: "Định dạng dữ liệu (Payload Format)", isNested: false },
+        "01": { name: "Phương thức khởi tạo (Point of Initiation)", isNested: false },
+        "38": { 
+            name: "Thông tin đơn vị thụ hưởng (NAPAS Merchant Info)", 
+            isNested: true,
+            subtags: {
+                "00": { name: "Mã định danh NAPAS (GUID)", isNested: false },
+                "01": { 
+                    name: "Tài khoản thụ hưởng (Consumer Account)", 
+                    isNested: true,
+                    subtags: {
+                        "00": { name: "Mã BIN ngân hàng nhận (MB Bank)", isNested: false },
+                        "01": { name: "Số tài khoản nhận tiền", isNested: false }
+                    }
+                },
+                "02": { name: "Mã dịch vụ liên ngân hàng (Service Code)", isNested: false }
+            }
+        },
+        "53": { name: "Mã đơn vị tiền tệ (VND là 704)", isNested: false },
+        "54": { name: "Số tiền giao dịch (Amount)", isNested: false },
+        "58": { name: "Mã quốc gia (Country Code)", isNested: false },
+        "59": { name: "Tên chủ tài khoản thụ hưởng (Merchant Name)", isNested: false },
+        "62": { 
+            name: "Thông tin mở rộng (Additional Data Field)", 
+            isNested: true,
+            subtags: {
+                "08": { name: "Nội dung chuyển khoản (Purpose of TX)", isNested: false }
+            }
+        },
+        "63": { name: "Mã kiểm tra lỗi (CRC-16 Checksum)", isNested: false }
+    };
+
+    // Hàm phân giải chuỗi TLV EMVCo đệ quy
+    function parseTlv(str) {
+        let index = 0;
+        const nodes = [];
+        while (index < str.length) {
+            if (index + 4 > str.length) break;
+            const tag = str.substr(index, 2);
+            const lenStr = str.substr(index + 2, 2);
+            const len = parseInt(lenStr, 10);
+            index += 4;
+            if (isNaN(len)) break;
+            const val = str.substr(index, len);
+            index += len;
+            nodes.push({ tag, len, val });
+        }
+        return nodes;
+    }
+
+    // Hàm dựng giao diện bảng giải mã TLV
+    function decodeAndRenderTlv(qrString) {
+        const tbody = document.querySelector("#tlv-decoder-table tbody");
+        tbody.innerHTML = ""; // Xóa dữ liệu cũ
+
+        const rootNodes = parseTlv(qrString);
+        
+        function renderNode(node, parentPath = [], specContext = EMV_SPEC) {
+            const spec = specContext[node.tag] || { name: "Trường mở rộng chưa định nghĩa", isNested: false };
+            const isSub = parentPath.length > 0;
+            const indentClass = isSub ? "tlv-subtag" : "";
+            
+            // Tạo dòng cho Node hiện tại
+            const tr = document.createElement("tr");
+            
+            // Cột Tag
+            const tdTag = document.createElement("td");
+            tdTag.className = "tlv-tag-code " + indentClass;
+            // Tạo thụt lề nếu là subtag
+            if (parentPath.length === 1) {
+                tdTag.style.paddingLeft = "24px";
+                tdTag.innerText = `└─ ${node.tag}`;
+            } else if (parentPath.length === 2) {
+                tdTag.style.paddingLeft = "44px";
+                tdTag.innerText = `└─ ${node.tag}`;
+            } else {
+                tdTag.innerText = node.tag;
+            }
+            tr.appendChild(tdTag);
+
+            // Cột Name
+            const tdName = document.createElement("td");
+            tdName.innerText = spec.name;
+            if (isSub) tdName.style.color = "#94a3b8";
+            tr.appendChild(tdName);
+
+            // Cột Length
+            const tdLen = document.createElement("td");
+            tdLen.innerText = node.len.toString().padStart(2, '0');
+            tdLen.style.fontFamily = "monospace";
+            tr.appendChild(tdLen);
+
+            // Cột Value
+            const tdVal = document.createElement("td");
+            if (spec.isNested) {
+                tdVal.innerHTML = `<em style="color: #64748b;">[Chứa dữ liệu lồng ghép]</em>`;
+            } else {
+                tdVal.innerHTML = `<span class="tlv-val-code">${node.val}</span>`;
+            }
+            tr.appendChild(tdVal);
+            
+            tbody.appendChild(tr);
+
+            // Nếu trường này có chứa các Tag con, đệ quy phân tích tiếp
+            if (spec.isNested && spec.subtags) {
+                const subNodes = parseTlv(node.val);
+                subNodes.forEach(subNode => {
+                    renderNode(subNode, [...parentPath, node.tag], spec.subtags);
+                });
+            }
+        }
+
+        rootNodes.forEach(node => {
+            renderNode(node);
+        });
+    }
+</script>

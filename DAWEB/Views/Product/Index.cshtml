@@ -1,0 +1,344 @@
+@model IEnumerable<DAWEB.Models.ProductModels>
+@{
+    ViewData["Title"] = "Thực Đơn";
+}
+
+<style>
+    /* Tiêu đề trang */
+    .menu-title {
+        font-family: 'Playfair Display', serif;
+        text-align: center;
+        margin: 40px 0 20px;
+        font-weight: 700;
+        color: var(--primary-brown);
+        font-size: 2.8rem;
+    }
+    
+    .menu-subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        margin-bottom: 50px;
+        font-size: 1.1rem;
+    }
+
+    /* Khung bọc từng sản phẩm (Card) */
+    .product-card {
+        border: none;
+        border-radius: 16px;
+        padding: 20px;
+        transition: var(--transition-smooth);
+        background: #fff;
+        height: 100%; /* Giúp các ô cao bằng nhau */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--card-shadow);
+    }
+
+    .product-card:hover {
+        box-shadow: 0 15px 35px rgba(93, 64, 55, 0.12);
+        transform: translateY(-5px);
+    }
+
+    /* Vùng chứa ảnh */
+    .img-container {
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--accent-peach);
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .img-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        transition: var(--transition-smooth);
+    }
+    
+    .product-card:hover .img-container img {
+        transform: scale(1.06);
+    }
+
+    .product-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        height: 2.6em; /* Giới hạn chiều cao tên sản phẩm 2 dòng */
+        overflow: hidden;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .price {
+        color: var(--accent-gold);
+        font-weight: 600;
+        font-size: 1.25rem;
+        margin-bottom: 15px;
+    }
+
+    .btn-detail {
+        background-color: var(--primary-brown);
+        color: white;
+        border: 2px solid var(--primary-brown);
+        padding: 8px 20px;
+        border-radius: 25px;
+        transition: var(--transition-smooth);
+        width: 100%;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .btn-detail:hover {
+        background-color: transparent;
+        color: var(--primary-brown);
+    }
+
+    /* Category Navigation Tabs Styles */
+    .btn-category-tab {
+        border-radius: 30px;
+        padding: 10px 24px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--primary-brown);
+        border: none;
+        background: transparent;
+        text-decoration: none;
+        transition: var(--transition-smooth);
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-category-tab:hover {
+        color: var(--accent-gold);
+        background-color: var(--accent-peach);
+    }
+
+    .btn-category-tab.active {
+        background-color: var(--primary-brown);
+        color: var(--accent-gold) !important;
+        box-shadow: 0 4px 15px rgba(62, 39, 35, 0.2);
+    }
+</style>
+
+<div class="container">
+    <h1 class="menu-title">
+        @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch as string))
+        {
+            <text>Kết quả tìm kiếm: "@ViewBag.CurrentSearch"</text>
+        }
+        else if (ViewBag.SelectedCategory != null)
+        {
+            var category = (CategoryModel)ViewBag.SelectedCategory;
+            <text>@category.Name &amp; @category.Description</text>
+        }
+        else
+        {
+            <text>Thực Đơn Bánh Tươi</text>
+        }
+    </h1>
+    <p class="menu-subtitle">Trải nghiệm những hương vị bánh thơm ngon được làm thủ công bằng tình yêu.</p>
+
+    <!-- Beautiful category tabs -->
+    <div class="category-tabs-container mb-5 text-center">
+        <div class="d-inline-flex flex-wrap justify-content-center gap-2 p-2 bg-white shadow-sm" style="border-radius: 40px; border: 1px solid rgba(62,39,35,0.05);">
+            <a href="/Product" class="btn-category-tab @(ViewBag.SelectedCategory == null ? "active" : "")">
+                <i class="fas fa-th-large me-2"></i> Tất cả
+            </a>
+            @if (ViewBag.Categories != null)
+            {
+                foreach (var category in (IEnumerable<CategoryModel>)ViewBag.Categories)
+                {
+                    var isSelected = ViewBag.SelectedCategory != null && ((CategoryModel)ViewBag.SelectedCategory).Id == category.Id;
+                    string iconClass = category.Id switch
+                    {
+                        1 => "fa-birthday-cake",
+                        2 => "fa-cookie",
+                        3 => "fa-bread-slice",
+                        _ => "fa-tag"
+                    };
+                    <a href="/Product?category=@category.Slug" class="btn-category-tab @(isSelected ? "active" : "")">
+                        <i class="fas @iconClass me-2"></i> @category.Name
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card">
+                        <!-- Vùng chứa ảnh -->
+                        <div class="img-container" onclick="location.href='/Product/Detail/@item.Id'" style="cursor: pointer;">
+                            <img src="@item.ImageUrl" alt="@item.ProductName">
+                        </div>
+
+                        <!-- Thông tin sản phẩm -->
+                        <div onclick="location.href='/Product/Detail/@item.Id'" style="cursor: pointer;">
+                            <div class="product-name" title="@item.ProductName">@item.ProductName</div>
+                            <p class="price">@item.ProductPrice.ToString("#,##0") VNĐ</p>
+                        </div>
+
+                        <div class="mt-auto">
+                            @if (item.ProductQuantity > 0)
+                            {
+                                <!-- Số lượng -->
+                                <div class="d-flex align-items-center justify-content-between mb-3 mt-2">
+                                    <span class="text-muted" style="font-size: 13px;">Số lượng:</span>
+                                    <div class="input-group input-group-sm" style="max-width: 90px; border: 1px solid #ced4da; border-radius: 6px; overflow: hidden;">
+                                        <button class="btn btn-light btn-sm px-2 py-0 border-0" type="button" onclick="changeListQty(@item.Id, -1)" style="font-weight: bold;" disabled>-</button>
+                                        <input type="text" class="form-control text-center p-0 border-0 qty-list-input" id="list-qty-@item.Id" value="1" readonly style="font-size: 13px; max-width: 30px; background-color: #fff; font-weight: 600;" data-max-stock="@item.ProductQuantity" />
+                                        <button class="btn btn-light btn-sm px-2 py-0 border-0" type="button" onclick="changeListQty(@item.Id, 1)" style="font-weight: bold;" @(item.ProductQuantity <= 1 ? "disabled" : "")>+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Hành động -->
+                                <div class="d-flex gap-2 align-items-center">
+                                    <a href="/Product/Detail/@item.Id" class="btn btn-outline-secondary btn-sm flex-grow-1 py-2 text-center" style="border-radius: 20px; font-size: 13px; font-weight: 500; border-color: var(--primary-brown); color: var(--primary-brown); text-decoration: none;">
+                                        Chi tiết
+                                    </a>
+                                    <button class="btn btn-primary btn-sm px-0 text-white" style="background-color: var(--primary-brown); border-color: var(--primary-brown); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" onclick="addListToCartAjax(@item.Id)" title="Thêm vào giỏ bánh">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                    <button class="btn btn-success btn-sm px-0" style="background-color: var(--accent-gold); border-color: var(--accent-gold); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" onclick="buyListNow(@item.Id)" title="Mua ngay">
+                                        <i class="fas fa-shopping-bag" style="color: var(--primary-brown);"></i>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-2 text-danger fw-bold" style="font-size: 14px;">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> Hết hàng
+                                </div>
+                                <div class="d-flex mt-2">
+                                    <a href="/Product/Detail/@item.Id" class="btn btn-outline-secondary btn-sm w-100 py-2 text-center text-decoration-none" style="border-radius: 20px; font-size: 13px; font-weight: 500; border-color: var(--primary-brown); color: var(--primary-brown);">
+                                        Chi tiết
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center" style="border-radius: 12px; background-color: var(--accent-peach); border: none; color: var(--primary-brown);">
+                    Hiện chưa có sản phẩm nào thuộc danh mục này.
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function changeListQty(productId, amount) {
+            const input = document.getElementById('list-qty-' + productId);
+            const currentVal = parseInt(input.value);
+            const maxVal = parseInt(input.getAttribute('data-max-stock')) || 99;
+            let newVal = currentVal + amount;
+
+            if (newVal < 1) newVal = 1;
+            if (newVal > maxVal) {
+                alert('Số lượng trong cửa hàng chỉ còn lại ' + maxVal + ' cái.');
+                newVal = maxVal;
+            }
+
+            input.value = newVal;
+
+            // Cập nhật trạng thái các nút
+            const btnMinus = input.previousElementSibling;
+            const btnPlus = input.nextElementSibling;
+
+            if (newVal <= 1) {
+                btnMinus.setAttribute('disabled', 'disabled');
+            } else {
+                btnMinus.removeAttribute('disabled');
+            }
+
+            if (newVal >= maxVal) {
+                btnPlus.setAttribute('disabled', 'disabled');
+            } else {
+                btnPlus.removeAttribute('disabled');
+            }
+        }
+
+        function addListToCartAjax(productId) {
+            const qtyInput = document.getElementById('list-qty-' + productId);
+            const quantity = parseInt(qtyInput.value);
+
+            const formData = new FormData();
+            formData.append('productId', productId);
+            formData.append('quantity', quantity);
+
+            fetch('/Cart/AddToCartAjax', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success', '/Cart');
+                    
+                    // Cập nhật badge giỏ hàng trên thanh điều hướng
+                    const cartBadges = document.querySelectorAll('.cart-badge');
+                    cartBadges.forEach(badge => {
+                        badge.innerText = data.cartCount;
+                    });
+                    
+                    // Cập nhật lại hover cart
+                    if (typeof refreshHoverCart === 'function') {
+                        refreshHoverCart();
+                    }
+                } else {
+                    showNotification(data.message || 'Không thể thêm vào giỏ hàng.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                showNotification('Không thể kết nối đến máy chủ. Vui lòng thử lại.', 'error');
+            });
+        }
+
+        function buyListNow(productId) {
+            const qtyInput = document.getElementById('list-qty-' + productId);
+            const quantity = parseInt(qtyInput.value);
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Cart/AddToCart';
+
+            const prodInput = document.createElement('input');
+            prodInput.type = 'hidden';
+            prodInput.name = 'productId';
+            prodInput.value = productId;
+            form.appendChild(prodInput);
+
+            const qInput = document.createElement('input');
+            qInput.type = 'hidden';
+            qInput.name = 'quantity';
+            qInput.value = quantity;
+            form.appendChild(qInput);
+
+            const buyNowInput = document.createElement('input');
+            buyNowInput.type = 'hidden';
+            buyNowInput.name = 'buyNow';
+            buyNowInput.value = 'true';
+            form.appendChild(buyNowInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+}

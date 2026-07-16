@@ -1,0 +1,74 @@
+@model ProductModels
+@{
+    ViewData["Title"] = "Thêm Bánh Mới";
+}
+
+<div class="hero">
+
+    <h1>Thêm Bánh Mới vào thực đơn</h1>
+
+    <form asp-controller="Product" asp-action="Create" method="POST" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="mb-3">
+            <label class="form-label">Tên bánh</label>
+            <input type="text" asp-for="ProductName" class="form-control" required>
+            <span asp-validation-for="ProductName" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mô tả bánh</label>
+            <input type="text" asp-for="ProductDescription" class="form-control" required>
+            <span asp-validation-for="ProductDescription" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Giá tiền (VNĐ)</label>
+            <input type="number" asp-for="ProductPrice" class="form-control" required>
+            <span asp-validation-for="ProductPrice" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Hương vị</label>
+            <input type="text" asp-for="ProductColor" class="form-control" placeholder="Ví dụ: Dâu tây, Matcha, Socola" required>
+            <span asp-validation-for="ProductColor" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Kích thước bánh</label>
+            <input type="text" asp-for="ProductSize" class="form-control" placeholder="Ví dụ: Đường kính 20cm, Hộp 6 chiếc" required>
+            <span asp-validation-for="ProductSize" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Thành phần chính</label>
+            <input type="text" asp-for="ProductMaterial" class="form-control" placeholder="Ví dụ: Bột mì, kem tươi Pháp" required>
+            <span asp-validation-for="ProductMaterial" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Số lượng bánh</label>
+            <input type="number" asp-for="ProductQuantity" class="form-control" required>
+            <span asp-validation-for="ProductQuantity" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Danh mục bánh</label>
+            <select class="form-select" asp-for="CategoryId" required>
+                @if (ViewBag.Categories != null)
+                {
+                    foreach (var category in (IEnumerable<CategoryModel>)ViewBag.Categories)
+                    {
+                        <option value="@category.Id">@category.Name (@category.Description)</option>
+                    }
+                }
+            </select>
+            <span asp-validation-for="CategoryId" class="text-bg-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Chọn file ảnh tải lên</label>
+            <input type="file" name="ImageUpload" class="form-control" accept="image/*">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Hoặc nhập đường dẫn hình ảnh (URL)</label>
+            <input type="text" asp-for="ImageUrl" class="form-control">
+            <span asp-validation-for="ImageUrl" class="text-bg-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Hủy</a>
+    </form>
+
+</div>

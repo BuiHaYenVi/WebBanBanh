@@ -1,0 +1,75 @@
+@model IEnumerable<DAWEB.Models.ViewModel.UserWithRoleViewModel>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+<div class="text-center">  
+    <h1 class="display-4">Danh sách người dùng</h1>
+    <div class="mb-3 text-end">
+        <a class="btn btn-primary" asp-controller="User" asp-action="Create">Tạo người dùng mới</a>
+    </div>
+    
+
+
+    <table class="table table-bordered table-striped text-start">
+        <thead class="table-dark">
+            <tr>
+                <th>Tài khoản</th>
+                <th>Email</th>
+                <th>Quyền (Role)</th>
+                <th>Trạng thái</th>
+                <th width="350px">Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.UserName</td>
+                    <td>@u.Email</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(u.RoleNames))
+                        {
+                            var roles = u.RoleNames.Split(", ");
+                            foreach (var role in roles)
+                            {
+                                if (role == "Admin")
+                                {
+                                    <span class="badge bg-danger">@role</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">@role</span>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa có quyền</span>
+                        }
+                    </td>
+                    <td>
+                        @if (u.IsLockedOut)
+                        {
+                            <span class="badge bg-secondary">Đã khóa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Hoạt động</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-sm btn-warning mb-1">Sửa</a>
+                        <a asp-action="AssignRole" asp-route-userId="@u.Id" class="btn btn-sm btn-info mb-1">Phân quyền</a>
+                        
+                        <form asp-action="ToggleLock" asp-route-id="@u.Id" method="post" style="display:inline;"
+                              onsubmit="return confirm('@(u.IsLockedOut ? "Xác nhận mở khóa tài khoản này?" : "Xác nhận KHÓA tài khoản này?")');">
+                            <button type="submit" class="btn btn-sm @(u.IsLockedOut ? "btn-success" : "btn-danger") mb-1">
+                                @(u.IsLockedOut ? "Mở Khóa" : "Khóa")
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,401 @@
+@model DAWEB.Models.OrderModel
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng " + Model.OrderCode + " — SweetBite Bakery";
+    var orderDetails = ViewBag.OrderDetails as List<DAWEB.Models.OrderDetailModel> ?? new List<DAWEB.Models.OrderDetailModel>();
+}
+
+<style>
+    :root {
+        --primary-brown: #3e2723;
+        --accent-gold: #c5a059;
+        --light-cream: #faf6f0;
+        --accent-peach: #f5ebe6;
+        --text-dark: #2b1f1d;
+        --text-muted: #7d6e6b;
+    }
+
+    .details-container {
+        max-width: 900px;
+        margin: 40px auto 80px;
+    }
+
+    .details-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(93, 64, 55, 0.06);
+        background: #ffffff;
+        padding: 40px;
+    }
+
+    /* Timeline Stepper */
+    .timeline-steps {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+        margin: 40px 0;
+        padding: 0;
+    }
+
+    .timeline-step {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 120px;
+    }
+
+    .step-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        border: 4px solid #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+    }
+
+    .step-label {
+        margin-top: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .step-date {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-top: 2px;
+    }
+
+    /* Active States */
+    .step-active .step-icon {
+        background-color: var(--accent-peach);
+        color: var(--primary-brown);
+        border-color: var(--accent-peach);
+    }
+
+    .step-active .step-label {
+        color: var(--primary-brown);
+    }
+
+    .step-completed .step-icon {
+        background-color: var(--primary-brown);
+        color: var(--accent-gold);
+        border-color: var(--primary-brown);
+    }
+
+    .step-completed .step-label {
+        color: var(--primary-brown);
+    }
+
+    .step-cancelled .step-icon {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border-color: #fee2e2;
+    }
+
+    .step-cancelled .step-label {
+        color: #dc2626;
+    }
+
+    /* Details Section */
+    .info-section {
+        background-color: #fbf9f6;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(197, 160, 89, 0.15);
+        margin-bottom: 30px;
+    }
+
+    .info-section h4 {
+        color: var(--primary-brown);
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(62, 39, 35, 0.08);
+        pb-2;
+    }
+
+    .order-item-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid #f5ebe6;
+    }
+
+    .table-details th {
+        font-weight: 600;
+        color: var(--text-muted);
+        border-bottom: 2px solid rgba(62, 39, 35, 0.08);
+    }
+
+    .table-details td {
+        border-bottom: 1px solid rgba(62, 39, 35, 0.05);
+        vertical-align: middle;
+    }
+</style>
+
+<div class="container details-container">
+    <div class="details-card">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom gap-3">
+            <div>
+                <a href="/Order" class="btn btn-sm btn-link text-muted p-0 mb-2 text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i> Quay lại đơn hàng của tôi
+                </a>
+                <h2 style="font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-brown); margin: 0;">
+                    Đơn hàng #@Model.OrderCode
+                </h2>
+                <div class="text-muted mt-1" style="font-size: 0.9rem;">
+                    Đặt ngày @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+            <div class="text-md-end">
+                @if (Model.Status == "Pending")
+                {
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill"><i class="fas fa-clock me-1"></i> Chờ duyệt</span>
+                }
+                else if (Model.Status == "Delivering")
+                {
+                    <span class="badge bg-info text-dark px-3 py-2 fs-6 rounded-pill" style="background-color: #81ecec !important;"><i class="fas fa-motorcycle me-1"></i> Đang giao hàng</span>
+                }
+                else if (Model.Status == "Completed")
+                {
+                    <span class="badge bg-success px-3 py-2 fs-6 rounded-pill"><i class="fas fa-check-circle me-1"></i> Hoàn thành</span>
+                }
+                else if (Model.Status == "Cancelled")
+                {
+                    <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill"><i class="fas fa-times-circle me-1"></i> Đã hủy</span>
+                }
+            </div>
+        </div>
+
+        <!-- Progress Timeline -->
+        <div class="timeline-steps">
+            @{
+                var step1Class = "step-completed";
+                var step2Class = (Model.Status == "Delivering" || Model.Status == "Completed") ? "step-completed" : (Model.Status == "Pending" ? "step-active" : "step-pending");
+                var step3Class = Model.Status == "Completed" ? "step-completed" : (Model.Status == "Delivering" ? "step-active" : "step-pending");
+                
+                var progressWidth1 = "0%";
+                var progressWidth2 = "0%";
+
+                if (Model.Status == "Delivering")
+                {
+                    progressWidth1 = "100%";
+                    progressWidth2 = "0%";
+                }
+                else if (Model.Status == "Completed")
+                {
+                    progressWidth1 = "100%";
+                    progressWidth2 = "100%";
+                }
+                else if (Model.Status == "Cancelled")
+                {
+                    progressWidth1 = "100%";
+                    progressWidth2 = "100%";
+                }
+            }
+
+            <!-- Bước 1 -->
+            <div class="timeline-step @step1Class">
+                <div class="step-icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="step-label">Đặt hàng</div>
+                <div class="step-date">@Model.CreatedDate.ToString("dd/MM/yyyy")</div>
+            </div>
+
+            <!-- Đường kẻ 1 -->
+            <div style="flex-grow: 1; max-width: 150px; height: 4px; background-color: #e5e7eb; margin-top: 25px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; height: 100%; width: @progressWidth1; transition: width 0.5s ease; @(Model.Status == "Cancelled" ? "background-color: #dc2626;" : "background-color: var(--accent-gold);")"></div>
+            </div>
+
+            <!-- Bước 2 -->
+            <div class="timeline-step @step2Class">
+                <div class="step-icon">
+                    <i class="fas fa-motorcycle"></i>
+                </div>
+                <div class="step-label">Đang giao</div>
+                <div class="step-date">
+                    @(Model.Status == "Pending" ? "Chờ xử lý" : (Model.Status == "Cancelled" ? "" : "Đang tiến hành"))
+                </div>
+            </div>
+
+            <!-- Đường kẻ 2 -->
+            <div style="flex-grow: 1; max-width: 150px; height: 4px; background-color: #e5e7eb; margin-top: 25px; position: relative;">
+                <div style="position: absolute; top: 0; left: 0; height: 100%; width: @progressWidth2; transition: width 0.5s ease; @(Model.Status == "Cancelled" ? "background-color: #dc2626;" : "background-color: var(--accent-gold);")"></div>
+            </div>
+
+            <!-- Bước 3 -->
+            @if (Model.Status == "Cancelled")
+            {
+                <div class="timeline-step step-cancelled">
+                    <div class="step-icon">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="step-label">Đã hủy</div>
+                    <div class="step-date">Hôm nay</div>
+                </div>
+            }
+            else
+            {
+                <div class="timeline-step @step3Class">
+                    <div class="step-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="step-label">Hoàn thành</div>
+                    <div class="step-date">
+                        @(Model.Status == "Completed" ? "Thành công" : "Chờ nhận bánh")
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Thông tin giao hàng & Thanh toán -->
+        <div class="info-section">
+            <h4 class="pb-2 border-bottom mb-3">Thông tin nhận hàng & Thanh toán</h4>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Họ tên người nhận:</div>
+                    <div class="fw-bold text-dark">@Model.ReceiverName</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Số điện thoại:</div>
+                    <div class="fw-bold text-dark">@Model.ReceiverPhone</div>
+                </div>
+                <div class="col-12">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Địa chỉ giao bánh:</div>
+                    <div class="fw-bold text-dark">@Model.ReceiverAddress</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Hình thức nhận:</div>
+                    <div class="fw-bold text-primary">@Model.DeliveryMethod</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Phí giao hàng:</div>
+                    <div class="fw-bold text-dark">@Model.ShippingFee.ToString("N0") đ</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Phương thức thanh toán:</div>
+                    <div class="fw-bold text-dark">
+                        @(Model.PaymentMethod == "COD" ? "Thanh toán khi nhận hàng (COD)" : (Model.PaymentMethod == "PayOS" ? "Thanh toán trực tuyến qua PayOS" : "Chuyển khoản ngân hàng"))
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Trạng thái thanh toán:</div>
+                    <div class="fw-bold">
+                        @if (Model.PaymentStatus == "Paid")
+                        {
+                            <span class="text-success"><i class="fas fa-check-circle me-1"></i> Đã thanh toán</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger"><i class="fas fa-times-circle me-1"></i> Chưa thanh toán</span>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted mb-1" style="font-size: 0.85rem;">Tổng tiền thanh toán:</div>
+                    <div class="fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <div class="mb-4">
+            <h4 class="mb-3 fs-5" style="color: var(--primary-brown); font-family: 'Playfair Display', serif; font-weight: 700;">
+                Danh sách bánh đã đặt
+            </h4>
+            <div class="table-responsive">
+                <table class="table table-details align-middle">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tên bánh</th>
+                            <th class="text-center">Đơn giá</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Tổng cộng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in orderDetails)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@(string.IsNullOrEmpty(item.Product?.ImageUrl) ? "/images/no-image.png" : item.Product.ImageUrl)" 
+                                         alt="@item.ProductName" 
+                                         class="order-item-img" 
+                                         onerror="this.src='/images/no-image.png';" />
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.ProductName</div>
+                                    @if (item.Product != null)
+                                    {
+                                        <div class="text-muted" style="font-size: 0.75rem;">@item.Product.ProductSize</div>
+                                    }
+                                </td>
+                                <td class="text-center">@item.Price.ToString("N0") đ</td>
+                                <td class="text-center fw-semibold">@item.Quantity</td>
+                                <td class="text-end fw-bold text-dark">@((item.Price * item.Quantity).ToString("N0")) đ</td>
+                            </tr>
+                        }
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <tr class="table-light">
+                                <td colspan="4" class="text-muted ps-3">Giảm giá Voucher (@Model.VoucherCode):</td>
+                                <td class="text-end fw-bold text-success pe-3">-@Model.DiscountAmount.ToString("N0") đ</td>
+                            </tr>
+                        }
+                        <tr class="table-light">
+                            <td colspan="4" class="fw-bold text-dark ps-3">Tổng thanh toán:</td>
+                            <td class="text-end fw-bold text-danger fs-5 pe-3">@Model.TotalAmount.ToString("N0") đ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+            <a href="/Order" class="btn btn-outline-dark px-4 py-2" style="border-radius: 30px; font-weight: 600;">
+                <i class="fas fa-chevron-left me-1"></i> Trở về danh sách
+            </a>
+
+            @if (Model.Status == "Pending")
+            {
+                <form action="/Order/Cancel/@Model.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger px-4 py-2" style="border-radius: 30px; font-weight: 600;">
+                        <i class="fas fa-ban me-1"></i> Hủy đơn hàng
+                    </button>
+                </form>
+            }
+            else if (Model.Status == "Delivering")
+            {
+                <form action="/Order/ConfirmReceived/@Model.Id" method="post" onsubmit="return confirm('Bạn xác nhận đã nhận bánh thành công?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success px-4 py-2 position-relative" style="border-radius: 30px; font-weight: 600; overflow: hidden; animation: pulse-green 2s infinite;">
+                        <i class="fas fa-check-circle me-1"></i> Đã nhận bánh
+                    </button>
+                </form>
+                <style>
+                    @@keyframes pulse-green {
+                        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+                        70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+                        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+                    }
+                </style>
+            }
+        </div>
+    </div>
+</div>

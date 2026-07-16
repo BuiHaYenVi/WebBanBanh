@@ -1,0 +1,434 @@
+@model DAWEB.Models.OrderModel
+@{
+    ViewData["Title"] = "Đặt hàng thành công — SweetBite Bakery";
+    var orderDetails = ViewBag.OrderDetails as List<DAWEB.Models.OrderDetailModel> ?? new List<DAWEB.Models.OrderDetailModel>();
+}
+
+<style>
+    :root {
+        --primary-brown: #3e2723;
+        --accent-gold: #c5a059;
+        --light-cream: #faf6f0;
+        --accent-peach: #f5ebe6;
+        --text-dark: #2b1f1d;
+        --text-muted: #7d6e6b;
+    }
+
+    .success-container {
+        max-width: 800px;
+        margin: 50px auto 100px;
+    }
+
+    .card-success {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 15px 45px rgba(93, 64, 55, 0.08);
+        background: #ffffff;
+        padding: 40px;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background-color: #def7ec;
+        color: #0e9f6e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 2.5rem;
+        margin: 0 auto 24px;
+    }
+
+    .order-code-badge {
+        background-color: var(--accent-peach);
+        color: var(--primary-brown);
+        font-family: monospace;
+        font-size: 1.3rem;
+        font-weight: 700;
+        padding: 8px 20px;
+        border-radius: 30px;
+        border: 1px dashed var(--accent-gold);
+        display: inline-block;
+    }
+
+    .details-table th {
+        font-weight: 600;
+        color: var(--text-muted);
+        border-bottom: 2px solid rgba(62, 39, 35, 0.1);
+    }
+
+    .details-table td {
+        color: var(--text-dark);
+        border-bottom: 1px solid rgba(62, 39, 35, 0.05);
+    }
+
+    .bank-info-box {
+        background-color: #fcf8f2;
+        border: 1px solid rgba(197, 160, 89, 0.3);
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+
+    .btn-success-action {
+        background: var(--primary-brown);
+        color: white;
+        border: 2px solid var(--primary-brown);
+        padding: 12px 30px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 30px;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .btn-success-action:hover {
+        background: transparent;
+        color: var(--primary-brown);
+        border-color: var(--primary-brown);
+    }
+
+    .btn-outline-action {
+        background: transparent;
+        color: var(--text-muted);
+        border: 2px solid rgba(62, 39, 35, 0.2);
+        padding: 12px 30px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 30px;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .btn-outline-action:hover {
+        border-color: var(--primary-brown);
+        color: var(--primary-brown);
+    }
+</style>
+
+<div class="container success-container">
+    <div class="card-success text-center">
+        <!-- Icon thành công -->
+        <div class="success-icon animate__animated animate__bounceIn">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <h2 class="mb-2" style="font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-brown);">Đặt bánh thành công!</h2>
+        <p class="text-muted mb-4">Cảm ơn bạn đã tin tưởng và lựa chọn bánh ngọt tại **SweetBite Bakery**.</p>
+        
+        <div class="mb-4">
+            <span class="text-muted d-block mb-1">Mã đơn hàng của bạn:</span>
+            <div class="order-code-badge">@Model.OrderCode</div>
+        </div>
+
+        <hr class="my-4" style="opacity: 0.15;" />
+
+        <!-- Thông tin giao nhận hàng -->
+        <div class="text-start mb-4">
+            <h4 class="mb-3 fs-5" style="color: var(--primary-brown); font-family: 'Playfair Display', serif; font-weight: 600;">Thông tin đơn hàng</h4>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <span class="text-muted d-block" style="font-size: 0.9rem;">Họ tên người nhận:</span>
+                    <strong class="text-dark">@Model.ReceiverName</strong>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <span class="text-muted d-block" style="font-size: 0.9rem;">Số điện thoại:</span>
+                    <strong class="text-dark">@Model.ReceiverPhone</strong>
+                </div>
+                <div class="col-12 mb-2">
+                    <span class="text-muted d-block" style="font-size: 0.9rem;">Địa chỉ giao bánh:</span>
+                    <strong class="text-dark">@Model.ReceiverAddress</strong>
+                </div>
+                <div class="col-12 mb-2">
+                    <span class="text-muted d-block" style="font-size: 0.9rem;">Hình thức nhận bánh:</span>
+                    @if (Model.DeliveryMethod == "Giao tận nơi")
+                    {
+                        <strong class="text-dark">Giao tận nơi : Phí ship +@Model.ShippingFee.ToString("N0")đ</strong>
+                    }
+                    else
+                    {
+                        <strong class="text-dark">Đến lấy tại tiệm : Miễn phí ship</strong>
+                    }
+                </div>
+                <div class="col-md-6 mb-2">
+                    <span class="text-muted d-block" style="font-size: 0.9rem;">Phương thức thanh toán:</span>
+                    <strong class="text-dark">
+                        @(Model.PaymentMethod == "COD" ? "Thanh toán khi nhận hàng (COD)" : (Model.PaymentMethod == "PayOS" ? "Thanh toán trực tuyến qua PayOS" : "Chuyển khoản ngân hàng"))
+                    </strong>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <span class="text-muted d-block" style="font-size: 0.9rem;">Thời gian đặt bánh:</span>
+                    <strong class="text-dark">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chi tiết sản phẩm đã mua -->
+        <div class="text-start mb-4">
+            <h4 class="mb-3 fs-5" style="color: var(--primary-brown); font-family: 'Playfair Display', serif; font-weight: 600;">Danh sách bánh đặt</h4>
+            <div class="table-responsive">
+                <table class="table details-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-0">Bánh</th>
+                            <th class="text-center">Đơn giá</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end pe-0">Tổng cộng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in orderDetails)
+                        {
+                            <tr>
+                                <td class="ps-0 fw-bold text-dark">@item.ProductName</td>
+                                <td class="text-center">@item.Price.ToString("N0") đ</td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end pe-0 fw-bold text-dark">@((item.Price * item.Quantity).ToString("N0")) đ</td>
+                            </tr>
+                        }
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <tr class="table-light">
+                                <td colspan="3" class="ps-2 fw-bold text-dark">Giảm giá Voucher (@Model.VoucherCode):</td>
+                                <td class="text-end pe-2 fw-bold text-success fs-5">-@Model.DiscountAmount.ToString("N0") đ</td>
+                            </tr>
+                        }
+                        @if (Model.DeliveryMethod == "Giao tận nơi")
+                        {
+                            <tr>
+                                <td colspan="3" class="ps-2 fw-bold text-dark">
+                                    <i class="fas fa-truck me-2" style="color: var(--accent-gold);"></i> Phí giao hàng:
+                                </td>
+                                <td class="text-end pe-2 fw-bold" style="color: #e53e3e;">
+                                    +@Model.ShippingFee.ToString("N0") đ
+                                </td>
+                            </tr>
+                        }
+                        <tr class="table-light">
+                            <td colspan="3" class="ps-2 fw-bold text-dark">Tổng thanh toán:</td>
+                            <td class="text-end pe-2 fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Khối hướng dẫn chuyển khoản nếu chọn ngân hàng hoặc PayOS -->
+        @if (Model.PaymentMethod == "BankTransfer" || Model.PaymentMethod == "PayOS")
+        {
+            var isPayOS = Model.PaymentMethod == "PayOS";
+            var payOSDetails = ViewBag.PayOSDetails as DAWEB.Services.PayOS.PayOSPaymentResponse;
+
+            <div class="bank-info-box text-start p-4 mt-4" id="bank-payment-box">
+                <!-- Thanh trạng thái thanh toán -->
+                @if (string.Equals(Model.Status, "Completed", StringComparison.OrdinalIgnoreCase) || string.Equals(Model.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
+                {
+                    <div id="payment-status-bar" class="alert alert-success text-center fw-bold mb-4" style="background-color: #def7ec; color: #03543f; border: 1px solid #def7ec; border-radius: 12px; font-size: 0.95rem;">
+                        <i class="fas fa-check-circle me-2"></i> Giao dịch đã được xác nhận thanh toán thành công!
+                    </div>
+                }
+                else
+                {
+                    <div id="payment-status-bar" class="alert alert-warning text-center fw-bold mb-4 animate__animated animate__pulse animate__infinite" style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 12px; font-size: 0.95rem;">
+                        <i class="fas fa-sync fa-spin me-2"></i> @(isPayOS ? "Giao dịch đang chờ thanh toán trực tuyến qua PayOS..." : "Giao dịch đang chờ xác nhận thanh toán chuyển khoản...")
+                    </div>
+                }
+
+                <h5 class="mb-4 text-dark fw-bold border-bottom pb-2" style="font-family: 'Playfair Display', serif;">
+                    @if (isPayOS)
+                    {
+                        <span><i class="fas fa-credit-card me-2 text-warning" style="color: var(--accent-gold) !important;"></i> QUÉT MÃ QR THANH TOÁN (PAYOS TỰ ĐỘNG)</span>
+                    }
+                    else
+                    {
+                        <span><i class="fas fa-university me-2 text-warning" style="color: var(--accent-gold) !important;"></i> THÔNG TIN CHUYỂN KHOẢN (SEPAY THỦ CÔNG)</span>
+                    }
+                </h5>
+
+                <div class="row">
+                    <!-- Cột thông tin chuyển khoản (Trái) -->
+                    <div class="col-md-7 mb-4">
+                        @if (isPayOS && payOSDetails == null)
+                        {
+                            <div class="alert alert-danger text-center fw-bold" role="alert">
+                                Không thể tải thông tin thanh toán từ PayOS. Quý khách vui lòng tải lại trang hoặc liên hệ quản trị viên.
+                            </div>
+                        }
+                        else
+                        {
+                            var bankName = !isPayOS ? "Ngân hàng Quân Đội (MB Bank)" : 
+                                           (payOSDetails?.Bin == "970422" ? "MB Bank (Ngân hàng TMCP Quân Đội)" : 
+                                           (payOSDetails?.Bin == "970415" ? "VietinBank (Ngân hàng TMCP Công Thương Việt Nam)" : 
+                                           "Ngân hàng đối tác PayOS (BIN: " + payOSDetails?.Bin + ")"));
+                            var accNumber = !isPayOS ? "0933436589" : payOSDetails?.AccountNumber;
+                            var accName = !isPayOS ? "BUI HA YEN VI" : payOSDetails?.AccountName;
+                            var transAmount = !isPayOS ? (long)Model.TotalAmount : (long)(payOSDetails?.Amount ?? 0);
+                            var transContent = !isPayOS ? Model.OrderCode : payOSDetails?.Description;
+
+                            <div class="p-3 bg-white rounded border mb-3">
+                                <span class="text-muted d-block small mb-1">Ngân hàng thụ hưởng:</span>
+                                <div class="fw-bold text-dark d-flex justify-content-between align-items-center">
+                                    <span>@bankName</span>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-white rounded border mb-3">
+                                <span class="text-muted d-block small mb-1">Số tài khoản:</span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="fs-5 text-dark">@accNumber</strong>
+                                    <button class="btn btn-outline-primary btn-sm px-3 py-1" onclick="copyToClipboard('@accNumber', 'Đã sao chép số tài khoản!')" style="border-radius: 20px; font-size: 11px; font-weight: 600;">
+                                        <i class="far fa-copy me-1"></i> SAO CHÉP
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-white rounded border mb-3">
+                                <span class="text-muted d-block small mb-1">Tên chủ tài khoản:</span>
+                                <div class="fw-bold text-dark">@accName</div>
+                            </div>
+
+                            <div class="p-3 bg-white rounded border mb-3">
+                                <span class="text-muted d-block small mb-1">Số tiền chuyển khoản:</span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="fs-5 text-danger">@transAmount.ToString("N0") VND</strong>
+                                    <button class="btn btn-outline-primary btn-sm px-3 py-1" onclick="copyToClipboard('@transAmount', 'Đã sao chép số tiền!')" style="border-radius: 20px; font-size: 11px; font-weight: 600;">
+                                        <i class="far fa-copy me-1"></i> SAO CHÉP
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-white rounded border mb-3" style="background-color: #fffbeb !important; border-color: #fde68a !important;">
+                                <span class="text-muted d-block small mb-1">Nội dung chuyển khoản (Bắt buộc ghi chính xác):</span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="fs-5 text-danger" style="font-family: monospace; letter-spacing: 1px;">@transContent</strong>
+                                    <button class="btn btn-danger btn-sm px-3 py-1" onclick="copyToClipboard('@transContent', 'Đã sao chép nội dung chuyển khoản!')" style="border-radius: 20px; font-size: 11px; font-weight: 600; background-color: var(--primary-brown); border-color: var(--primary-brown);">
+                                        <i class="far fa-copy me-1"></i> SAO CHÉP
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Cột QR Code (Phải) -->
+                    <div class="col-md-5 text-center mb-4 d-flex flex-column align-items-center justify-content-center border-start">
+                        @if (isPayOS && payOSDetails == null)
+                        {
+                            <div class="p-3 rounded border text-muted">
+                                <i class="fas fa-exclamation-triangle fs-3 text-warning mb-2"></i><br/>
+                                Không thể tải mã QR
+                            </div>
+                        }
+                        else
+                        {
+                            var qrUrl = !isPayOS ? 
+                                $"https://img.vietqr.io/image/MB-0933436589-compact2.png?amount={(long)Model.TotalAmount}&addInfo={Model.OrderCode}&accountName=BUI%20HA%20YEN%20VI" : 
+                                $"https://img.vietqr.io/image/{payOSDetails?.Bin}-{payOSDetails?.AccountNumber}-compact2.png?amount={payOSDetails?.Amount}&addInfo={Uri.EscapeDataString(payOSDetails?.Description ?? "")}&accountName={Uri.EscapeDataString(payOSDetails?.AccountName ?? "")}";
+
+                            <div class="qr-container bg-white p-3 rounded shadow-sm border mb-3" style="width: 230px; height: 230px; display: flex; align-items: center; justify-content: center;">
+                                <img src="@qrUrl" alt="Mã QR Chuyển Khoản" class="img-fluid" style="max-height: 100%; max-width: 100%;" />
+                            </div>
+                            <p class="small text-muted px-2" style="font-size: 11px; line-height: 1.4;">
+                                <i class="fas fa-qrcode me-1"></i> Hỗ trợ quét mã QRCode từ các app <strong>Ngân Hàng, Momo, ZaloPay, ViettelMoney, VNPay...</strong> để tự động điền thông tin chuyển khoản.
+                            </p>
+                            
+                            @if (isPayOS)
+                            {
+                                <div class="mt-2 text-center w-100 px-2">
+                                    <a href="@payOSDetails?.CheckoutUrl" target="_blank" class="btn btn-sm btn-outline-warning w-100 fw-bold py-2" style="border-radius: 20px; font-size: 11px; color: var(--primary-brown); border-color: var(--primary-brown);">
+                                        <i class="fas fa-external-link-alt me-1"></i> THANH TOÁN TRÊN CỔNG PAYOS
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="mt-2 text-muted" style="font-size: 0.85rem; line-height: 1.6; border-top: 1px dashed rgba(62, 39, 35, 0.15); padding-top: 15px;">
+                    <p class="mb-1"><i class="fas fa-check-circle text-success me-1"></i> Chúng tôi không chịu trách nhiệm với những giao dịch chuyển sai số tài khoản hoặc sai nội dung chuyển khoản.</p>
+                    <p class="mb-0"><i class="fas fa-info-circle text-info me-1"></i> Sau khi nhận được tiền, hệ thống sẽ tự động cập nhật đơn hàng thành công và gửi email thông báo cho bạn.</p>
+                </div>
+            </div>
+
+            <!-- JavaScript cho sao chép và Polling trạng thái thanh toán -->
+            <script>
+                function copyToClipboard(text, successMsg) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        if (typeof showNotification === "function") {
+                            showNotification(successMsg, "success");
+                        } else {
+                            alert(successMsg);
+                        }
+                    }).catch(function(err) {
+                        console.error('Không thể sao chép: ', err);
+                    });
+                }
+
+                @if (!string.Equals(Model.Status, "Completed", StringComparison.OrdinalIgnoreCase) && !string.Equals(Model.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
+                {
+                    <text>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const orderCode = "@Model.OrderCode";
+                        const checkInterval = setInterval(function() {
+                            fetch('/Cart/CheckOrderStatus?orderCode=' + orderCode)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const success = data.success !== undefined ? data.success : data.Success;
+                                    const status = (data.status !== undefined ? data.status : data.Status || "").toString().trim().toLowerCase();
+                                    const paymentStatus = (data.paymentStatus !== undefined ? data.paymentStatus : data.PaymentStatus || "").toString().trim().toLowerCase();
+                                    
+                                    if (success && (status === "completed" || paymentStatus === "paid")) {
+                                        clearInterval(checkInterval);
+                                        
+                                        // 1. Cập nhật thanh trạng thái
+                                        const statusBar = document.getElementById("payment-status-bar");
+                                        if (statusBar) {
+                                            statusBar.className = "alert alert-success text-center fw-bold mb-4";
+                                            statusBar.style.backgroundColor = "#def7ec";
+                                            statusBar.style.color = "#03543f";
+                                            statusBar.style.borderColor = "#def7ec";
+                                            statusBar.innerHTML = '<i class="fas fa-check-circle me-2"></i><strong>Giao dịch thanh toán thành công!</strong> Đơn hàng đã được xác nhận.';
+                                        }
+
+                                        // 2. Chuyển đổi khối thông tin thanh toán thành thông báo thành công
+                                        const bankBox = document.getElementById("bank-payment-box");
+                                        if (bankBox) {
+                                            const originalStatusHtml = statusBar ? statusBar.outerHTML : "";
+                                            bankBox.innerHTML = originalStatusHtml + `
+                                                <div class="text-center py-5">
+                                                    <div class="mb-4 animate__animated animate__bounceIn" style="display: inline-flex; width: 80px; height: 80px; background-color: #def7ec; color: #0e9f6e; align-items: center; justify-content: center; border-radius: 50%; font-size: 2.5rem; box-shadow: 0 10px 20px rgba(14, 159, 110, 0.15);">
+                                                        <i class="fas fa-check"></i>
+                                                    </div>
+                                                    <h4 class="fw-bold text-success" style="font-family: 'Playfair Display', serif;">Xác nhận thanh toán thành công!</h4>
+                                                    <p class="text-muted mt-2">Cảm ơn quý khách đã hoàn tất thanh toán chuyển khoản.</p>
+                                                    <p class="text-muted small">Bếp bánh SweetBite đã nhận được yêu cầu và bắt đầu chuẩn bị bánh giao đến bạn.</p>
+                                                </div>
+                                            `;
+                                        }
+
+                                        // 3. Hiển thị thông báo Toast
+                                        if (typeof showNotification === "function") {
+                                            showNotification("Thanh toán thành công! Cảm ơn bạn.", "success");
+                                        }
+                                    }
+                                })
+                                .catch(err => console.error("Lỗi kiểm tra đơn hàng:", err));
+                        }, 3000); // Kiểm tra mỗi 3 giây
+                    });
+                    </text>
+                }
+            </script>
+        }
+
+        <div class="mt-5">
+            <a href="/Product" class="btn-success-action me-2 mb-2">Tiếp tục mua bánh</a>
+            <a href="/Home" class="btn-outline-action mb-2">Về trang chủ</a>
+        </div>
+    </div>
+</div>

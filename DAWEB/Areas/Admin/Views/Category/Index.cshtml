@@ -1,0 +1,61 @@
+@model IEnumerable<DAWEB.Models.CategoryModel>
+@{
+    ViewData["Title"] = "Quản lý Danh mục";
+}
+
+<div class="card shadow border-0" style="border-radius: 16px;">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="m-0 font-weight-bold" style="font-family: 'Playfair Display', serif; color: var(--primary-brown);">Danh sách Danh mục</h5>
+        <a asp-action="Create" class="btn btn-primary btn-sm px-3 py-2" style="border-radius: 20px; background-color: var(--primary-brown); border-color: var(--primary-brown);">
+            <i class="fas fa-plus me-1"></i> Thêm danh mục
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Tên Danh mục</th>
+                        <th>Slug (URL)</th>
+                        <th>Mô tả</th>
+                        <th class="text-end" style="width: 200px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@item.Id</td>
+                                <td>@item.Name</td>
+                                <td><code class="bg-light px-2 py-1 text-dark" style="border-radius: 4px;">@item.Slug</code></td>
+                                <td class="text-muted">@item.Description</td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 15px; border-color: var(--primary-brown); color: var(--primary-brown);">
+                                            <i class="fas fa-edit me-1"></i> Sửa
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3" style="border-radius: 15px;">
+                                                <i class="fas fa-trash-alt me-1"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Không có danh mục nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

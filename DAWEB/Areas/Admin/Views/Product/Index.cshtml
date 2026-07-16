@@ -1,0 +1,73 @@
+@model IEnumerable<ProductModels>
+@{
+    ViewData["Title"] = "List Product";
+}
+
+<div class="hero">
+
+    <h1>Quản lý Bánh - SweetBite Bakery</h1>
+    <a class="btn btn-primary" asp-controller="Product" asp-action="Create">Thêm Bánh Mới</a>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên bánh</th>
+                <th>Mô tả</th>
+                <th>Giá bánh</th>
+                <th>Hương vị</th>
+                <th>Kích thước</th>
+                <th>Thành phần</th>
+                <th>Số lượng</th>
+                <th>Danh mục</th>
+                <th>Hình ảnh</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.ProductName</td>
+                        <td>@item.ProductDescription</td>
+                        <td>@item.ProductPrice.ToString("N0") VNĐ</td>
+                        <td>@item.ProductColor</td>
+                        <td>@item.ProductSize</td>
+                        <td>@item.ProductMaterial</td>
+                        <td>@item.ProductQuantity</td>
+                        <td>
+                            @if (item.Category != null)
+                            {
+                                <span class="badge bg-primary">@item.Category.Name</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Không có</span>
+                            }
+                        </td>
+                        <td>
+                            <img src="@item.ImageUrl" style="width:50px; height:auto;" />
+                        </td>
+                        <td>
+                            <a class="btn btn-sm btn-primary" href="@Url.Action("Edit", "Product", new { id = item.Id })">Sửa</a>
+
+                            <form asp-action="Delete" asp-controller="Product" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Xóa sản phẩm');">
+                                <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="12" class="text-center text-danger">không có sản phẩm nào</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+   
+
+</div>

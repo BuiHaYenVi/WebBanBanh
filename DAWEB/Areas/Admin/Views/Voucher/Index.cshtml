@@ -1,0 +1,93 @@
+@model IEnumerable<DAWEB.Models.VoucherModel>
+@{
+    ViewData["Title"] = "Quản lý Voucher";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-6">
+            <h2 class="m-0 text-dark">Quản lý Mã giảm giá (Voucher)</h2>
+        </div>
+        <div class="col-6 text-right">
+            <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Tạo Voucher mới</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã Voucher</th>
+                        <th>Loại / Mức giảm</th>
+                        <th>Đơn tối thiểu</th>
+                        <th>Hạn dùng</th>
+                        <th>Đã dùng / Giới hạn</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.Code</strong></td>
+                            <td>
+                                @if (item.DiscountType == "Fixed")
+                                {
+                                    <span class="text-success">-@item.DiscountValue.ToString("#,##0")đ</span>
+                                }
+                                else
+                                {
+                                    <span class="text-primary">-@item.DiscountValue%</span>
+                                    @if(item.MaxDiscountAmount.HasValue)
+                                    {
+                                        <br/><small>(Tối đa: @item.MaxDiscountAmount.Value.ToString("#,##0")đ)</small>
+                                    }
+                                }
+                            </td>
+                            <td>@item.MinimumOrderAmount.ToString("#,##0")đ</td>
+                            <td>
+                                @item.StartDate.ToString("dd/MM/yyyy")<br/>
+                                <small class="text-muted">Đến @item.EndDate.ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td>@item.UsedCount / @item.UsageLimit</td>
+                            <td>
+                                @if (item.IsActive && item.EndDate >= DateTime.Now && item.UsedCount < item.UsageLimit)
+                                {
+                                    <span class="badge badge-success text-dark" style="color: black !important;">Đang hoạt động</span>
+                                }
+                                else if (!item.IsActive)
+                                {
+                                    <span class="badge badge-secondary text-dark" style="color: black !important;">Đã vô hiệu</span>
+                                }
+                                else if (item.UsedCount >= item.UsageLimit)
+                                {
+                                    <span class="badge badge-warning text-dark" style="color: black !important;">Hết lượt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger text-dark" style="color: black !important;">Hết hạn</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Sửa"><i class="fas fa-edit"></i></a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa voucher này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

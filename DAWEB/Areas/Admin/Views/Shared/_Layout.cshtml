@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - @ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+            :root {
+                --primary-brown: #3e2723;
+                --accent-gold: #c5a059;
+                --accent-peach: #f5ebe6;
+                --text-dark: #2b1f1d;
+            }
+
+            body {
+                font-family: 'Outfit', 'Segoe UI', Tahoma, sans-serif;
+                background-color: #fcfaf7;
+            }
+
+            .sidebar {
+                min-height: 100vh;
+                background: #2b1f1d;
+                color: white;
+                padding-top: 20px;
+                border-right: 2px solid var(--accent-gold);
+            }
+
+                .sidebar a {
+                    color: #d7ccc8;
+                    text-decoration: none;
+                    padding: 15px 20px;
+                    display: block;
+                    transition: 0.3s;
+                }
+
+                    .sidebar a:hover {
+                        background: #3e2723;
+                        color: var(--accent-gold);
+                        padding-left: 30px;
+                    }
+
+                    .sidebar a.active {
+                        background: var(--primary-brown);
+                        color: var(--accent-gold);
+                        border-left: 5px solid var(--accent-gold);
+                    }
+
+            .admin-header {
+                background: white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                padding: 15px 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid var(--accent-peach);
+            }
+
+            .main-content {
+                padding: 30px;
+            }
+
+            .logo-admin {
+                font-family: 'Playfair Display', serif;
+                font-size: 20px;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 30px;
+                color: var(--accent-gold);
+                letter-spacing: 1px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="logo-admin">SWEETBITE ADMIN</div>
+                <a asp-area="Admin" asp-controller="Home" asp-action="Index"><i class="fas fa-desktop me-2"></i> Quản lý Trang chủ</a>
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index"><i class="fas fa-cookie-bite me-2"></i> Quản lý Bánh</a>
+                <a asp-area="Admin" asp-controller="Category" asp-action="Index"><i class="fas fa-tags me-2"></i> Quản lý Danh mục</a>
+                <a asp-area="Admin" asp-controller="Stock" asp-action="Index"><i class="fas fa-warehouse me-2"></i> Kho hàng</a>
+                <a asp-area="Admin" asp-controller="User" asp-action="Index"><i class="fas fa-users me-2"></i> Khách hàng</a>
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index"><i class="fas fa-shopping-cart me-2"></i> Quản lý Đơn hàng</a>
+                <a asp-area="Admin" asp-controller="Voucher" asp-action="Index"><i class="fas fa-ticket-alt me-2"></i> Mã giảm giá</a>
+                <a asp-area="Admin" asp-controller="Feedback" asp-action="Index"><i class="fas fa-inbox me-2"></i> Hộp Thư Góp Ý</a>
+                <hr style="border-color: rgba(255,255,255,0.15);" />
+                <a asp-area="" asp-controller="Home" asp-action="Index"><i class="fas fa-eye me-2"></i> Xem Website</a>
+            </nav>
+
+            <main class="col-md-10 ms-sm-auto px-0">
+                <header class="admin-header">
+                    <div class="breadcrumb-area">
+                        <h4 class="m-0" style="font-family: 'Playfair Display', serif; color: var(--primary-brown);">@ViewData["Title"]</h4>
+                    </div>
+                    <div class="user-info d-flex align-items-center">
+                        <span class="me-3" style="color: var(--text-dark);">Xin chào, <strong>@User.Identity?.Name</strong></span>
+                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="btn btn-outline-danger btn-sm px-3" style="border-radius: 20px;">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </div>
+                </header>
+
+                <div class="main-content">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 12px;">
+                            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 12px;">
+                            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @RenderBody()
+                </div>
+
+                <footer class="text-center py-4 text-muted border-top" style="border-color: var(--accent-peach);">
+                    <small>© 2026 SweetBite Bakery - Trang quản trị</small>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

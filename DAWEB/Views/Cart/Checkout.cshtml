@@ -1,0 +1,365 @@
+@model DAWEB.Models.OrderModel
+@{
+    ViewData["Title"] = "Thanh toán đơn hàng — SweetBite Bakery";
+    var cartItems = ViewBag.CartItems as List<DAWEB.Models.CartItem> ?? new List<DAWEB.Models.CartItem>();
+    var totalAmount = ViewBag.TotalAmount != null ? (decimal)ViewBag.TotalAmount : 0;
+}
+
+<style>
+    :root {
+        --primary-brown: #3e2723;
+        --accent-gold: #c5a059;
+        --light-cream: #faf6f0;
+        --accent-peach: #f5ebe6;
+        --text-dark: #2b1f1d;
+        --text-muted: #7d6e6b;
+    }
+
+    .checkout-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--primary-brown);
+    }
+
+    .card-luxury {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(93, 64, 55, 0.05);
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .form-label-luxury {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--primary-brown);
+        margin-bottom: 8px;
+    }
+
+    .form-control-luxury {
+        border: 1px solid rgba(62, 39, 35, 0.15);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        transition: all 0.3s ease;
+    }
+
+    .form-control-luxury:focus {
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+        outline: none;
+    }
+
+    .payment-method-box {
+        border: 2px solid rgba(62, 39, 35, 0.1);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .payment-method-box:hover {
+        border-color: var(--accent-gold);
+        background-color: var(--light-cream);
+    }
+
+    .payment-method-box input[type="radio"] {
+        margin-right: 12px;
+        accent-color: var(--primary-brown);
+    }
+
+    .payment-method-box.selected {
+        border-color: var(--accent-gold);
+        background-color: var(--accent-peach);
+    }
+
+    .order-summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px dashed rgba(62, 39, 35, 0.1);
+        font-size: 0.95rem;
+    }
+
+    .order-summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .btn-confirm-order {
+        background: var(--primary-brown);
+        color: #ffffff;
+        border: 2px solid var(--primary-brown);
+        padding: 14px 0;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 30px;
+    }
+
+    .btn-confirm-order:hover {
+        background: transparent;
+        color: var(--primary-brown);
+        border-color: var(--primary-brown);
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Khối điền thông tin thanh toán (Trái) -->
+        <div class="col-lg-7 mb-4">
+            <div class="card-luxury p-4 p-md-5">
+                <h3 class="checkout-title mb-4">
+                    <i class="fas fa-shipping-fast me-2 text-warning" style="color: var(--accent-gold) !important;"></i> Thông tin nhận bánh
+                </h3>
+
+                <form asp-controller="Cart" asp-action="Checkout" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="VoucherCode" id="hiddenVoucherCode" />
+
+                    <div class="mb-3">
+                        <label asp-for="ReceiverName" class="form-label form-label-luxury">Họ tên người nhận</label>
+                        <input asp-for="ReceiverName" class="form-control form-control-luxury" placeholder="Ví dụ: Nguyễn Văn A" />
+                        <span asp-validation-for="ReceiverName" class="text-danger" style="font-size: 0.85rem;"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ReceiverPhone" class="form-label form-label-luxury">Số điện thoại liên hệ</label>
+                        <input asp-for="ReceiverPhone" class="form-control form-control-luxury" placeholder="Ví dụ: 0987654321" />
+                        <span asp-validation-for="ReceiverPhone" class="text-danger" style="font-size: 0.85rem;"></span>
+                    </div>
+
+                    <div class="mb-4" id="address-container">
+                        <label asp-for="ReceiverAddress" class="form-label form-label-luxury">Địa chỉ giao bánh</label>
+                        <textarea asp-for="ReceiverAddress" id="receiver-address-input" class="form-control form-control-luxury" rows="3" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                        <span asp-validation-for="ReceiverAddress" class="text-danger" style="font-size: 0.85rem;"></span>
+                    </div>
+
+                    <h4 class="checkout-title mb-3 fs-5 mt-4">Hình thức nhận bánh</h4>
+                    
+                    <div class="payment-method-box delivery-box mb-3" id="box-delivery-home" onclick="selectDelivery('Giao tận nơi')">
+                        <input type="radio" asp-for="DeliveryMethod" value="Giao tận nơi" id="del-home" checked />
+                        <label for="del-home" class="mb-0 fw-bold text-dark w-100 d-flex justify-content-between" style="cursor: pointer;">
+                            <span>Giao tận nơi <small class="d-block text-muted fw-normal" style="font-size: 0.8rem;">Chỉ giao trong nội thành (bán kính 8-10km).</small></span>
+                            <span class="text-danger">+30.000đ</span>
+                        </label>
+                    </div>
+
+                    <div class="payment-method-box delivery-box mb-4" id="box-delivery-store" onclick="selectDelivery('Đến lấy trực tiếp')">
+                        <input type="radio" asp-for="DeliveryMethod" value="Đến lấy trực tiếp" id="del-store" />
+                        <label for="del-store" class="mb-0 fw-bold text-dark w-100 d-flex justify-content-between" style="cursor: pointer;">
+                            <span>Đến lấy trực tiếp <small class="d-block text-muted fw-normal" style="font-size: 0.8rem;">Bạn tự đến lấy tại cửa hàng.</small></span>
+                            <span class="text-success">Miễn phí</span>
+                        </label>
+                    </div>
+
+                    <h4 class="checkout-title mb-3 fs-5">Phương thức thanh toán</h4>
+                    
+                    <div class="payment-method-box" onclick="selectPayment('cod')">
+                        <input type="radio" asp-for="PaymentMethod" value="COD" id="pay-cod" checked />
+                        <label for="pay-cod" class="mb-0 fw-bold text-dark" style="cursor: pointer;">
+                            Thanh toán khi nhận hàng (COD)
+                            <small class="d-block text-muted fw-normal mt-1">Quý khách thanh toán tiền mặt trực tiếp cho Shipper khi nhận bánh.</small>
+                        </label>
+                    </div>
+
+                    <div class="payment-method-box" onclick="selectPayment('payos')">
+                        <input type="radio" asp-for="PaymentMethod" value="PayOS" id="pay-payos" />
+                        <label for="pay-payos" class="mb-0 fw-bold text-dark" style="cursor: pointer;">
+                            Thanh toán trực tuyến qua PayOS (QR Code tự động)
+                            <small class="d-block text-muted fw-normal mt-1">Hệ thống sẽ chuyển hướng bạn tới trang thanh toán bảo mật PayOS.</small>
+                        </label>
+                    </div>
+                    <span asp-validation-for="PaymentMethod" class="text-danger d-block mb-4" style="font-size: 0.85rem;"></span>
+
+                    <div class="mt-4 pt-2">
+                        <button type="submit" class="btn-confirm-order">
+                            Xác nhận đặt hàng <i class="fas fa-check ms-1"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Khối tóm tắt đơn hàng (Phải) -->
+        <div class="col-lg-5 mb-4">
+            <div class="card-luxury p-4" style="position: sticky; top: 120px;">
+                <h3 class="checkout-title mb-4 fs-4 border-bottom pb-3">Tóm tắt đơn hàng</h3>
+
+                <div class="cart-items-summarymb-4">
+                    @foreach (var item in cartItems)
+                    {
+                        <div class="order-summary-item">
+                            <div class="pe-2">
+                                <span class="fw-bold text-dark">@item.ProductName</span>
+                                <small class="d-block text-muted">Số lượng: @item.Quantity</small>
+                            </div>
+                            <span class="text-dark fw-bold align-self-center">@((item.Price * item.Quantity).ToString("N0")) đ</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="voucher-box border-top pt-3 mt-3">
+                    <label class="form-label-luxury mb-2">Mã giảm giá</label>
+                    <div class="input-group">
+                        <input type="text" id="voucherInput" class="form-control" placeholder="Nhập mã giảm giá..." style="text-transform:uppercase; border-color: rgba(62, 39, 35, 0.15);" />
+                        <button class="btn btn-dark" type="button" onclick="applyVoucher()">Áp dụng</button>
+                    </div>
+                    <div id="voucherMessage" class="mt-2" style="font-size: 0.85rem;"></div>
+                </div>
+
+                <div class="border-top pt-3 mt-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tạm tính:</span>
+                        <span class="text-dark fw-medium" id="subtotalDisplay">@totalAmount.ToString("N0") đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" id="discountRow" style="@(Model != null && !string.IsNullOrEmpty(Model.VoucherCode) ? "display:flex !important;" : "display:none !important;")">
+                        <span class="text-muted">Giảm giá Voucher:</span>
+                        <span class="text-success fw-medium" id="discountDisplay">
+                            @(Model != null && Model.DiscountAmount > 0 ? "-" + Model.DiscountAmount.ToString("N0") + " đ" : "-0 đ")
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3" id="shipping-fee-row">
+                        <span class="text-muted">Phí giao hàng:</span>
+                        <span class="text-dark fw-bold" id="shipping-fee-amount">30,000 đ</span>
+                        <input type="hidden" name="ShippingFee" id="hiddenShippingFee" value="30000" />
+                    </div>
+                    <div class="d-flex justify-content-between border-top pt-3">
+                        <span class="fw-bold text-dark fs-5">Tổng thanh toán:</span>
+                        <span class="text-danger fw-bold fs-4" id="totalDisplay">@totalAmount.ToString("N0") đ</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-light rounded" style="border-left: 4px solid var(--accent-gold); font-size: 0.85rem; color: #5d4037;">
+                    <i class="fas fa-info-circle me-1"></i> Bánh của SweetBite Bakery luôn được làm mới mỗi ngày. Vui lòng kiểm tra lại thông tin nhận hàng trước khi bấm đặt hàng.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var baseTotal = @(totalAmount.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+    var discountAmount = @(((Model?.DiscountAmount) ?? 0).ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+    var shippingFee = 30000;
+
+    function selectDelivery(method) {
+        document.querySelectorAll('.delivery-box').forEach(box => {
+            box.classList.remove('selected');
+        });
+        if (method === 'Giao tận nơi') {
+            document.getElementById('box-delivery-home').classList.add('selected');
+            document.getElementById('del-home').checked = true;
+            shippingFee = 30000;
+            document.getElementById('shipping-fee-amount').innerText = '30,000 đ';
+            
+            document.getElementById('address-container').style.display = 'block';
+            if (document.getElementById('receiver-address-input').value === 'Nhận tại cửa hàng') {
+                document.getElementById('receiver-address-input').value = '';
+            }
+        } else {
+            document.getElementById('box-delivery-store').classList.add('selected');
+            document.getElementById('del-store').checked = true;
+            shippingFee = 0;
+            document.getElementById('shipping-fee-amount').innerText = '0 đ';
+            
+            document.getElementById('address-container').style.display = 'none';
+            document.getElementById('receiver-address-input').value = 'Nhận tại cửa hàng';
+        }
+        updateFinalTotal();
+    }
+
+    function updateFinalTotal() {
+        var finalTotal = baseTotal + shippingFee - discountAmount;
+        if (finalTotal < 0) finalTotal = 0;
+        document.getElementById('totalDisplay').innerText = finalTotal.toLocaleString('vi-VN') + ' đ';
+        document.getElementById('hiddenShippingFee').value = shippingFee;
+    }
+
+    function selectPayment(id) {
+        document.querySelectorAll('.payment-method-box:not(.delivery-box)').forEach(box => {
+            box.classList.remove('selected');
+        });
+        if (id === 'cod') {
+            document.getElementById('pay-cod').checked = true;
+            document.getElementById('pay-cod').closest('.payment-method-box').classList.add('selected');
+        } else if (id === 'payos') {
+            document.getElementById('pay-payos').checked = true;
+            document.getElementById('pay-payos').closest('.payment-method-box').classList.add('selected');
+        }
+    }
+    
+    // Đánh dấu phương thức được chọn mặc định khi load trang
+    document.addEventListener("DOMContentLoaded", function() {
+        if (document.getElementById('pay-cod') && document.getElementById('pay-cod').checked) {
+            document.getElementById('pay-cod').closest('.payment-method-box').classList.add('selected');
+        } else if (document.getElementById('pay-payos') && document.getElementById('pay-payos').checked) {
+            document.getElementById('pay-payos').closest('.payment-method-box').classList.add('selected');
+        }
+        
+        // Khởi tạo trạng thái giao hàng
+        if (document.getElementById('del-home') && document.getElementById('del-home').checked) {
+            selectDelivery('Giao tận nơi');
+        } else if (document.getElementById('del-store') && document.getElementById('del-store').checked) {
+            selectDelivery('Đến lấy trực tiếp');
+        }
+
+        // Tự động kiểm tra và áp dụng lại giao diện voucher nếu có sẵn từ Model
+        var existingVoucher = document.getElementById('hiddenVoucherCode').value;
+        if (existingVoucher) {
+            document.getElementById('voucherInput').value = existingVoucher;
+            applyVoucher(); // Gọi lại hàm apply để fetch API lấy số tiền giảm giá chính xác và cập nhật UI
+        } else {
+            updateFinalTotal();
+        }
+    });
+
+    function applyVoucher() {
+        var code = document.getElementById('voucherInput').value;
+        var msgDiv = document.getElementById('voucherMessage');
+        if (!code) {
+            msgDiv.innerHTML = '<span class="text-danger">Vui lòng nhập mã giảm giá.</span>';
+            return;
+        }
+        
+        msgDiv.innerHTML = '<span class="text-info">Đang kiểm tra...</span>';
+        
+        fetch('/Cart/ApplyVoucher', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'code=' + encodeURIComponent(code)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                discountAmount = data.discountAmount;
+                msgDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+                document.getElementById('hiddenVoucherCode').value = data.code;
+                
+                document.getElementById('discountRow').style.setProperty('display', 'flex', 'important');
+                document.getElementById('discountDisplay').innerText = '-' + data.discountFormatted;
+                
+                updateFinalTotal();
+            } else {
+                discountAmount = 0;
+                msgDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> ' + data.message + '</span>';
+                document.getElementById('hiddenVoucherCode').value = '';
+                
+                document.getElementById('discountRow').style.setProperty('display', 'none', 'important');
+                updateFinalTotal();
+            }
+        })
+        .catch(err => {
+            msgDiv.innerHTML = '<span class="text-danger">Lỗi kết nối. Vui lòng thử lại.</span>';
+        });
+    }
+</script>
+

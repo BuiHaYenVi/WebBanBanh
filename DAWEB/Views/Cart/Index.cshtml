@@ -1,0 +1,198 @@
+@model List<DAWEB.Models.CartItem>
+
+<div class="container mt-5" style="min-height: 50vh;">
+    <h2 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary-brown); font-weight: 700;">
+        Giỏ hàng của bạn
+    </h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #fde8e8; color: #9b1c1c; border-radius: 12px;">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #def7ec; color: #03543f; border-radius: 12px;">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="table-responsive shadow-sm" style="border-radius: 16px; overflow: hidden; background: #fff;">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background-color: var(--primary-brown); color: white;">
+                <tr>
+                    <th class="py-3 px-4 border-0">Sản phẩm</th>
+                    <th class="py-3 border-0 text-center">Giá</th>
+                    <th class="py-3 border-0 text-center">Số lượng</th>
+                    <th class="py-3 border-0 text-center">Tổng cộng</th>
+                    <th class="py-3 px-4 border-0 text-center">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-shopping-basket fa-3x mb-3 text-muted" style="opacity: 0.3;"></i>
+                            <p class="mb-0">Giỏ hàng của bạn đang trống</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    var productStocks = ViewBag.ProductStocks as Dictionary<int, int> ?? new Dictionary<int, int>();
+                    @foreach (var item in Model)
+                    {
+                        var maxStock = productStocks.ContainsKey(item.ProductId) ? productStocks[item.ProductId] : 99;
+                        <tr data-product-id="@item.ProductId">
+                            <td class="py-3 px-4 fw-bold text-dark">@item.ProductName</td>
+                            <td class="py-3 text-center">@item.Price.ToString("N0") đ</td>
+                            <td class="py-3 text-center">
+                                <div class="input-group input-group-sm justify-content-center" style="max-width: 120px; margin: 0 auto;">
+                                    <button class="btn btn-outline-secondary px-2 py-1 btn-minus" type="button" onclick="changeQuantity(@item.ProductId, -1)">−</button>
+                                    <input type="text" class="form-control text-center qty-input" value="@item.Quantity" readonly style="max-width: 45px; background-color: #fff; font-size: 14px; font-weight: 600;" data-price="@item.Price" data-max-stock="@maxStock" id="qty-@item.ProductId" />
+                                    <button class="btn btn-outline-secondary px-2 py-1 btn-plus" type="button" onclick="changeQuantity(@item.ProductId, 1)">+</button>
+                                </div>
+                                <small class="text-muted d-block mt-1" style="font-size: 11px;">Còn lại @maxStock cái</small>
+                            </td>
+                            <td class="py-3 text-center fw-bold text-dark item-total">@( (item.Price * item.Quantity).ToString("N0") ) đ</td>
+                            <td class="py-3 px-4 text-center">
+                                <a href="/Cart/RemoveFromCart?productId=@item.ProductId" class="btn btn-danger btn-sm rounded-pill px-3" style="font-size: 13px;">
+                                    <i class="fas fa-trash-alt me-1"></i> Xóa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.Count > 0)
+    {
+        <div class="text-end mt-4">
+            <h4 class="mb-4">
+                Tổng tiền:
+                <span id="cart-total-amount" class="text-danger fw-bold ms-2" style="font-size: 28px;">
+                    @Model.Sum(x => x.Price * x.Quantity).ToString("N0") đ
+                </span>
+            </h4>
+
+            <a href="/Product" class="btn btn-outline-secondary me-2 px-4 py-2 rounded-pill fw-bold" style="border-color: var(--primary-brown); color: var(--primary-brown);">
+                Tiếp tục mua sắm
+            </a>
+            <a href="/Cart/Checkout" class="btn btn-success px-5 py-2 rounded-pill fw-bold" style="background-color: var(--primary-brown); border-color: var(--primary-brown); color: var(--accent-gold);">
+                Thanh toán <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="text-center mt-4">
+            <a href="/Product" class="btn btn-success px-5 py-2 rounded-pill fw-bold" style="background-color: var(--primary-brown); border-color: var(--primary-brown); color: var(--accent-gold);">
+                Đến Thực Đơn <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function changeQuantity(productId, amount) {
+            const input = document.getElementById('qty-' + productId);
+            const currentVal = parseInt(input.value);
+            const maxVal = parseInt(input.getAttribute('data-max-stock'));
+            const newVal = currentVal + amount;
+
+            if (newVal < 1) {
+                return; // Không cho giảm dưới 1
+            }
+            if (newVal > maxVal) {
+                alert('Số lượng trong giỏ đã đạt giới hạn tồn kho của cửa hàng (' + maxVal + ' cái).');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('productId', productId);
+            formData.append('quantity', newVal);
+
+            fetch('/Cart/UpdateQuantity', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = newVal;
+
+                    // Cập nhật trạng thái các nút
+                    const btnMinus = input.previousElementSibling;
+                    const btnPlus = input.nextElementSibling;
+                    
+                    if (newVal <= 1) {
+                        btnMinus.setAttribute('disabled', 'disabled');
+                    } else {
+                        btnMinus.removeAttribute('disabled');
+                    }
+
+                    if (newVal >= maxVal) {
+                        btnPlus.setAttribute('disabled', 'disabled');
+                    } else {
+                        btnPlus.removeAttribute('disabled');
+                    }
+
+                    // Cập nhật giá tổng sản phẩm
+                    const row = document.querySelector('tr[data-product-id="' + productId + '"]');
+                    if (row) {
+                        const rowTotal = row.querySelector('.item-total');
+                        if (rowTotal) {
+                            rowTotal.innerText = data.itemTotal;
+                        }
+                    }
+
+                    // Cập nhật tổng tiền giỏ hàng
+                    const cartTotal = document.getElementById('cart-total-amount');
+                    if (cartTotal) {
+                        cartTotal.innerText = data.cartTotal;
+                    }
+
+                    // Cập nhật số lượng hiển thị trên Badge Navbar
+                    const cartBadges = document.querySelectorAll('.cart-badge');
+                    cartBadges.forEach(badge => {
+                        badge.innerText = data.cartCount;
+                    });
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi cập nhật giỏ hàng.');
+                    if (data.maxQuantity !== undefined) {
+                        input.value = data.maxQuantity;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating cart:', error);
+                alert('Không thể kết nối đến máy chủ. Vui lòng thử lại.');
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const inputs = document.querySelectorAll('.qty-input');
+            inputs.forEach(input => {
+                const currentVal = parseInt(input.value);
+                const maxVal = parseInt(input.getAttribute('data-max-stock'));
+                const btnMinus = input.previousElementSibling;
+                const btnPlus = input.nextElementSibling;
+
+                if (currentVal <= 1) {
+                    btnMinus.setAttribute('disabled', 'disabled');
+                }
+                if (currentVal >= maxVal) {
+                    btnPlus.setAttribute('disabled', 'disabled');
+                }
+            });
+        });
+    </script>
+}

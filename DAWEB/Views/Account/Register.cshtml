@@ -1,0 +1,105 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<div class="register-page d-flex justify-content-center align-items-center">
+
+    <div class="register-card p-4 shadow">
+
+        <div class="text-center mb-4">
+            <h1 class="h3 fw-bold register-title">Đăng ký tài khoản</h1>
+            <p class="text-muted small">Trở thành thành viên của <span class="brand-text">SweetBite</span></p>
+        </div>
+
+        <form method="post" asp-controller="Account" asp-action="Register">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label small fw-bold">Địa chỉ Email</label>
+                <input type="email" asp-for="Email" placeholder="Nhập địa chỉ email..." class="form-control rounded-pill" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label small fw-bold">Mật khẩu</label>
+                <div class="position-relative">
+                    <input type="password" asp-for="Password" placeholder="Nhập mật khẩu..." class="form-control rounded-pill pe-5" id="passwordInput" />
+                    <i class="fas fa-eye position-absolute top-50 end-0 translate-middle-y me-3 text-muted" id="togglePasswordIcon" style="cursor: pointer;" title="Hiện mật khẩu"></i>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-brand w-100 rounded-pill fw-bold mt-2">ĐĂNG KÝ NGAY</button>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top small">
+            <p class="text-muted">Đã có tài khoản? <a asp-controller="Account" asp-action="Login" class="text-decoration-none brand-link fw-bold">Đăng nhập tại đây</a></p>
+        </div>
+
+    </div>
+</div>
+
+@* --- CSS ĐỒNG BỘ VỚI TRANG ĐĂNG NHẬP --- *@
+<style>
+    /* 1. Nền toàn trang: Màu vàng be nhạt */
+    .register-page {
+        min-height: 100vh;
+        background-color: #fcf8f2;
+    }
+
+    /* 2. Hộp đăng ký */
+    .register-card {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 400px;
+        border-radius: 15px;
+    }
+
+    /* 3. Màu chữ tiêu đề & Brand */
+    .register-title, .brand-text {
+        color: #2c1c13; /* Màu nâu đậm */
+    }
+
+    .brand-link {
+        color: #be9355; /* Màu vàng bánh nướng */
+    }
+    .brand-link:hover {
+        color: #2c1c13;
+    }
+
+    /* 4. Nút bấm Đăng ký */
+    .btn-brand {
+        background-color: #2c1c13;
+        color: #ffffff;
+        padding: 10px;
+    }
+    .btn-brand:hover {
+        background-color: #be9355;
+        color: #ffffff;
+    }
+</style>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleIcon = document.getElementById("togglePasswordIcon");
+            const passInput = document.getElementById("passwordInput");
+
+            if (toggleIcon && passInput) {
+                toggleIcon.addEventListener("click", function () {
+                    // Chuyển đổi giữa password và text
+                    const type = passInput.getAttribute("type") === "password" ? "text" : "password";
+                    passInput.setAttribute("type", type);
+
+                    // Đổi hình icon mắt
+                    this.classList.toggle("fa-eye");
+                    this.classList.toggle("fa-eye-slash");
+                });
+            }
+        });
+    </script>
+}

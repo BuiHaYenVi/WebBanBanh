@@ -1,0 +1,342 @@
+@model DAWEB.Models.ProductModels
+@{
+    ViewData["Title"] = Model.ProductName + " — SweetBite Bakery";
+}
+
+<style>
+    :root {
+        --accent-gold: #c5a059;
+        --primary-brown: #3e2723;
+        --accent-peach: #f5ebe6;
+        --text-dark: #2b1f1d;
+    }
+
+    .detail-container {
+        margin-top: 50px;
+        margin-bottom: 80px;
+    }
+
+    /* Khung ảnh bên trái - Phong cách Studio */
+    .detail-image-wrapper {
+        position: sticky;
+        top: 120px;
+        background-color: var(--accent-peach);
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        min-height: 450px;
+    }
+
+    .detail-image-wrapper img {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        display: block;
+        transition: transform 0.8s ease;
+        object-fit: contain;
+        border-radius: 12px;
+    }
+
+    .detail-image-wrapper:hover img {
+        transform: scale(1.04);
+    }
+
+    /* Thông tin bên phải */
+    .detail-content-box {
+        padding-left: 40px;
+    }
+
+    .breadcrumb-luxury {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-muted);
+        margin-bottom: 15px;
+    }
+
+    .product-name-luxury {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--primary-brown);
+        margin-bottom: 15px;
+        line-height: 1.2;
+    }
+
+    .product-price-luxury {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--accent-gold);
+        letter-spacing: 0.5px;
+        margin-bottom: 30px;
+        display: block;
+    }
+
+    /* List thông số mảnh mai */
+    .specs-list {
+        border-top: 1px solid rgba(62, 39, 35, 0.1);
+        padding-top: 25px;
+    }
+
+    .spec-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        border-bottom: 1px dashed rgba(62, 39, 35, 0.08);
+        padding-bottom: 10px;
+    }
+
+    .spec-label {
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .spec-value {
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .product-desc {
+        margin: 30px 0;
+        line-height: 1.8;
+        color: #5d4037;
+        font-weight: 400;
+        font-size: 1rem;
+        font-style: italic;
+        background-color: var(--accent-peach);
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid var(--accent-gold);
+    }
+
+    /* Form điều khiển */
+    .purchase-action {
+        margin-top: 30px;
+    }
+
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        border: 1px solid rgba(62, 39, 35, 0.2);
+        width: fit-content;
+        margin-bottom: 25px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .quantity-btn {
+        background: none;
+        border: none;
+        padding: 10px 18px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: var(--primary-brown);
+        transition: var(--transition-smooth);
+    }
+
+    .quantity-btn:hover {
+        background-color: var(--accent-peach);
+    }
+
+    .quantity-input {
+        width: 50px;
+        border: none;
+        text-align: center;
+        font-weight: 600;
+        outline: none;
+        color: var(--primary-brown);
+    }
+
+    /* Buttons */
+    .btn-add-to-cart {
+        background: var(--primary-brown);
+        color: white;
+        border: 2px solid var(--primary-brown);
+        padding: 16px 0;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: var(--transition-smooth);
+        border-radius: 30px;
+    }
+
+    .btn-add-to-cart:hover {
+        background: transparent;
+        color: var(--primary-brown);
+    }
+
+    .btn-buy-now {
+        background: transparent;
+        color: var(--primary-brown);
+        border: 2px solid rgba(62, 39, 35, 0.3);
+        padding: 16px 0;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 15px;
+        transition: var(--transition-smooth);
+        border-radius: 30px;
+    }
+
+    .btn-buy-now:hover {
+        border-color: var(--primary-brown);
+        background-color: rgba(62, 39, 35, 0.05);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .detail-content-box {
+            padding-left: 15px;
+            margin-top: 35px;
+        }
+
+        .product-name-luxury {
+            font-size: 2.2rem;
+        }
+    }
+</style>
+
+<div class="container detail-container">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="detail-image-wrapper">
+                <img src="@Model.ImageUrl" alt="@Model.ProductName" id="mainImage" />
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="detail-content-box">
+                <nav class="breadcrumb-luxury">
+                    Thực Đơn / @Model.ProductGender
+                </nav>
+
+                <h1 class="product-name-luxury">@Model.ProductName</h1>
+                <span class="product-price-luxury">@Model.ProductPrice.ToString("#,##0") <small>VNĐ</small></span>
+
+                <div class="specs-list">
+                    <div class="spec-item">
+                        <span class="spec-label">Thành phần chính</span>
+                        <span class="spec-value">@Model.ProductMaterial</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Hương vị</span>
+                        <span class="spec-value">@Model.ProductColor</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Kích thước bánh</span>
+                        <span class="spec-value">@Model.ProductSize</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Trạng thái lò</span>
+                        <span class="spec-value text-success">Còn lại @Model.ProductQuantity cái</span>
+                    </div>
+                </div>
+
+                <div class="product-desc">
+                    "@Model.ProductDescription"
+                </div>
+
+                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="purchase-action">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" name="buyNow" id="buyNowInput" value="false" />
+
+                    <label class="spec-label d-block mb-3">Số lượng đặt bánh</label>
+                    <div class="quantity-selector">
+                        <button type="button" class="quantity-btn" onclick="changeQty(-1)">−</button>
+                        <input type="number" name="quantity" id="productQuantity" value="1" min="1" max="@Model.ProductQuantity" class="quantity-input" readonly />
+                        <button type="button" class="quantity-btn" onclick="changeQty(1)">+</button>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-add-to-cart" onclick="addToCartAjax()">
+                            Thêm vào giỏ bánh
+                        </button>
+                        <button type="submit" class="btn-buy-now" onclick="document.getElementById('buyNowInput').value='true';">
+                            Mua ngay lập tức
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-5 pt-4 text-center" style="border-top: 1px dashed rgba(62, 39, 35, 0.2);">
+                    <p style="font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); line-height: 1.6;">
+                        BÁNH ĐƯỢC LÀM MỚI LIÊN TỤC TẠI CỬA HÀNG. <br>
+                        MIỄN PHÍ VẬN CHUYỂN TRONG BÁN KÍNH 5KM CHO ĐƠN HÀNG TỪ 200.000 VNĐ.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function changeQty(amount) {
+        const input = document.getElementById('productQuantity');
+        const max = parseInt(input.getAttribute('max')) || 99;
+        let current = parseInt(input.value);
+
+        current += amount;
+
+        if (current < 1) current = 1;
+        if (current > max) current = max;
+
+        input.value = current;
+    }
+
+    function addToCartAjax() {
+        const productId = @Model.Id;
+        const qtyInput = document.getElementById('productQuantity');
+        const quantity = parseInt(qtyInput.value);
+
+        const formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('quantity', quantity);
+
+        const btnAdd = document.querySelector('.btn-add-to-cart');
+        const originalText = btnAdd.innerText;
+        btnAdd.innerText = 'Đang xử lý...';
+        btnAdd.setAttribute('disabled', 'disabled');
+
+        fetch('/Cart/AddToCartAjax', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            btnAdd.innerText = originalText;
+            btnAdd.removeAttribute('disabled');
+
+            if (data.success) {
+                showNotification(data.message, 'success', '/Cart');
+                
+                // Cập nhật badge giỏ hàng trên thanh điều hướng
+                const cartBadges = document.querySelectorAll('.cart-badge');
+                cartBadges.forEach(badge => {
+                    badge.innerText = data.cartCount;
+                });
+                
+                // Cập nhật lại hover cart
+                if (typeof refreshHoverCart === 'function') {
+                    refreshHoverCart();
+                }
+            } else {
+                showNotification(data.message || 'Không thể thêm vào giỏ hàng.', 'error');
+            }
+        })
+        .catch(error => {
+            btnAdd.innerText = originalText;
+            btnAdd.removeAttribute('disabled');
+            console.error('Error adding to cart:', error);
+            showNotification('Không thể kết nối đến máy chủ. Vui lòng thử lại.', 'error');
+        });
+    }
+</script>

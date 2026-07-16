@@ -1,0 +1,220 @@
+@model IEnumerable<DAWEB.Models.OrderModel>
+@{
+    ViewData["Title"] = "Quản lý Đơn hàng - SweetBite Bakery";
+    var currentStatus = ViewBag.CurrentStatus as string;
+    var currentSearch = ViewBag.CurrentSearch as string;
+}
+
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .status-badge-admin {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Thống kê nhanh -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-white p-3 border-start border-primary border-4">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-circle me-3">
+                        <i class="fas fa-shopping-cart fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Tổng đơn hàng</h6>
+                        <h3 class="m-0 fw-bold">@ViewBag.TotalCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-white p-3 border-start border-warning border-4">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-circle me-3">
+                        <i class="fas fa-clock fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Chờ duyệt</h6>
+                        <h3 class="m-0 fw-bold">@ViewBag.PendingCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-white p-3 border-start border-success border-4">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle me-3">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Đã duyệt</h6>
+                        <h3 class="m-0 fw-bold">@ViewBag.CompletedCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-white p-3 border-start border-danger border-4">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-circle me-3">
+                        <i class="fas fa-ban fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Đã hủy</h6>
+                        <h3 class="m-0 fw-bold">@ViewBag.CancelledCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bộ lọc & Tìm kiếm -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card-body">
+            <form method="get" action="/Admin/Order" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0 ps-0" 
+                               placeholder="Tìm mã đơn, tên khách hàng..." value="@currentSearch">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <!option value="Pending" @(currentStatus == "Pending" ? "selected" : "")>Chờ duyệt</!option>
+                        <!option value="Completed" @(currentStatus == "Completed" ? "selected" : "")>Đã duyệt</!option>
+                        <!option value="Cancelled" @(currentStatus == "Cancelled" ? "selected" : "")>Đã hủy</!option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-filter me-1"></i> Lọc</button>
+                    <a href="/Admin/Order" class="btn btn-outline-secondary px-3 ms-2"><i class="fas fa-sync-alt"></i></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Danh sách Đơn hàng -->
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="m-0 fw-bold text-dark"><i class="fas fa-list me-2"></i> Danh sách Đơn hàng</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover m-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Khách hàng</th>
+                            <th>Thông tin nhận hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Phương thức</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end pe-3">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary" style="font-family: monospace; font-size: 1rem;">
+                                        @order.OrderCode
+                                    </td>
+                                    <td class="text-muted">
+                                        @order.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@order.UserName</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@order.ReceiverName</div>
+                                        <div class="text-muted small">ĐT: @order.ReceiverPhone</div>
+                                        <div class="text-muted small text-truncate" style="max-width: 200px;" title="@order.ReceiverAddress">DC: @order.ReceiverAddress</div>
+                                    </td>
+                                    <td class="fw-bold text-danger">
+                                        @order.TotalAmount.ToString("N0") đ
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @(order.PaymentMethod == "COD" ? "COD" : (order.PaymentMethod == "PayOS" ? "PayOS" : "Bank"))
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (order.PaymentStatus == "Paid")
+                                        {
+                                            <span class="badge bg-success status-badge-admin"><i class="fas fa-check-circle me-1"></i> Đã thanh toán</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger status-badge-admin"><i class="fas fa-times-circle me-1"></i> Chưa thanh toán</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (order.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark status-badge-admin"><i class="fas fa-clock me-1"></i> Chờ duyệt</span>
+                                        }
+                                        else if (order.Status == "Completed")
+                                        {
+                                            <span class="badge bg-success status-badge-admin"><i class="fas fa-check-circle me-1"></i> Đã duyệt</span>
+                                        }
+                                        else if (order.Status == "Cancelled")
+                                        {
+                                            <span class="badge bg-danger status-badge-admin"><i class="fas fa-times-circle me-1"></i> Đã hủy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@order.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <a href="/Admin/Order/Details/@order.Id" class="btn btn-sm btn-outline-primary px-3 rounded-pill">
+                                                <i class="fas fa-eye me-1"></i> Chi tiết
+                                            </a>
+                                            @if (order.Status == "Pending")
+                                            {
+                                                <form action="/Admin/Order/Approve/@order.Id" method="post" style="display:inline;" onsubmit="return confirm('Duyệt đơn hàng này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-success px-3 rounded-pill">
+                                                        <i class="fas fa-check me-1"></i> Duyệt
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
+                                    <h5>Không tìm thấy đơn hàng nào</h5>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

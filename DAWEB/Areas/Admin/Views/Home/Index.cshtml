@@ -1,0 +1,72 @@
+@model DAWEB.Models.ViewModel.HomePageConfig
+@{
+    ViewData["Title"] = "Quản lý Giao diện Trang chủ";
+}
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white pt-3 pb-2 border-bottom">
+        <h5 class="text-dark mb-0">Cấu hình Banner (Hero Section)</h5>
+    </div>
+    <div class="card-body">
+
+        <form asp-action="Update" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <!-- Cột trái: Form nhập liệu -->
+                <div class="col-md-7">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cập nhật Ảnh Nền (Background Image)</label>
+                        <input type="file" name="backgroundFile" class="form-control" accept="image/*" id="bannerInput" />
+                        <div class="form-text">Chọn tệp hình ảnh từ máy tính để tải lên. Bỏ trống nếu muốn giữ nguyên ảnh hiện tại.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phụ Đề (Subtitle)</label>
+                        <input asp-for="Subtitle" class="form-control" placeholder="Nhập phụ đề..." />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiêu Đề Chính (Title)</label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề chính..." />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Đoạn Mô Tả (Description)</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập đoạn mô tả..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Số Điện Thoại Hotline</label>
+                        <input asp-for="Hotline" class="form-control" placeholder="Ví dụ: 0987654321" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i> Lưu Thay Đổi</button>
+                </div>
+
+                <!-- Cột phải: Xem trước ảnh -->
+                <div class="col-md-5">
+                    <div class="card border">
+                        <div class="card-header bg-light text-center py-2">
+                            Bản xem trước Ảnh Nền
+                        </div>
+                        <div class="card-body p-2 text-center" style="background-color: #f8f9fa;">
+                            <img id="bannerPreview" src="@Model.BackgroundImage" alt="Banner Preview" class="img-fluid rounded shadow-sm" style="max-height: 350px; object-fit: cover;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hiển thị trước ảnh khi chọn file
+        document.getElementById('bannerInput').addEventListener('change', function(event) {
+            const [file] = event.target.files;
+            if (file) {
+                document.getElementById('bannerPreview').src = URL.createObjectURL(file);
+            }
+        });
+    </script>
+}

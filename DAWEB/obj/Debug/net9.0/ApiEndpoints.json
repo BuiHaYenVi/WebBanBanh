@@ -1,0 +1,22 @@
+[
+  {
+    "ContainingType": "DAWEB.Controllers.PaymentWebhookController",
+    "Method": "ReceivePayOSWebhook",
+    "RelativePath": "api/webhooks/payos",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DAWEB.Controllers.PaymentWebhookController",
+    "Method": "ReceiveSePayWebhook",
+    "RelativePath": "api/webhooks/sepay",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]
